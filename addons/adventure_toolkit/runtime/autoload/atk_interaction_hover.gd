@@ -151,22 +151,18 @@ func _hide() -> void:
 func _apply_cursor_shape(shape: int) -> void:
 	if not cursor_feedback_enabled:
 		return
-	if _current_cursor_shape == shape:
+	# Re-apply when needed: other UI controls can override cursor shape.
+	if _current_cursor_shape == shape and Input.get_current_cursor_shape() == shape:
 		return
 	_current_cursor_shape = shape
 	Input.set_default_cursor_shape(shape)
-	match shape:
-		Input.CURSOR_POINTING_HAND:
-			Input.set_custom_mouse_cursor(_runtime_cursor_interact, Input.CURSOR_POINTING_HAND, custom_cursor_hotspot)
-		Input.CURSOR_HELP:
-			Input.set_custom_mouse_cursor(_runtime_cursor_inspect, Input.CURSOR_HELP, custom_cursor_hotspot)
-		Input.CURSOR_ARROW:
-			Input.set_custom_mouse_cursor(null, Input.CURSOR_ARROW, Vector2.ZERO)
 
 
 func _prepare_runtime_cursors() -> void:
 	_runtime_cursor_interact = custom_cursor_interact if custom_cursor_interact != null else _build_interact_cursor_texture()
 	_runtime_cursor_inspect = custom_cursor_inspect if custom_cursor_inspect != null else _build_inspect_cursor_texture()
+	Input.set_custom_mouse_cursor(_runtime_cursor_interact, Input.CURSOR_POINTING_HAND, custom_cursor_hotspot)
+	Input.set_custom_mouse_cursor(_runtime_cursor_inspect, Input.CURSOR_HELP, custom_cursor_hotspot)
 
 
 func _build_interact_cursor_texture() -> Texture2D:
