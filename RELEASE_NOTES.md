@@ -29,7 +29,6 @@ ATK for Godot by use<web/> is now publicly uploaded as a designer-first 3D adven
 ### Documentation Included
 
 - `README.md` (public-facing overview, purpose, architecture, and usage philosophy)
-- `addons/adventure_toolkit/docs/ATK Manual.md` (creator-focused step-by-step demo build guide)
 - `addons/adventure_toolkit/docs/foundation_conventions.md`
 
 ### Packaging Notes
