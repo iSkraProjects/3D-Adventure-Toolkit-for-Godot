@@ -2,7 +2,7 @@
 
 ## v0.5 Initial Public Upload
 
-ATK for Godot by use<web/> is now publicly uploaded as a designer-first 3D adventure toolkit for Godot.
+3DATK for Godot by use<web/> is now publicly uploaded as a designer-first 3D adventure toolkit for Godot.
 
 ### Highlights
 

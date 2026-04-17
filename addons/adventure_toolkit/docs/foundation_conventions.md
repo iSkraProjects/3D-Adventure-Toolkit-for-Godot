@@ -1,9 +1,9 @@
-# Adventure Toolkit Foundation Conventions
+# 3DATK Foundation Conventions
 
 ## Purpose
 
 This document defines the initial directory, naming, and ID conventions for the
-Godot 3D Adventure Toolkit. All new Phase 0+ work should follow these rules
+Godot 3D Adventure Toolkit (3DATK). All new Phase 0+ work should follow these rules
 unless a later approved architecture update replaces them.
 
 ## Directory Responsibilities

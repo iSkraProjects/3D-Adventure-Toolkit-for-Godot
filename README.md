@@ -1,5 +1,7 @@
 # 3DATK for Godot by USE Web
 
+![3DATK Banner](addons/adventure_toolkit/resources/3DATK_Banner.png)
+
 ## Why This Addon Exists
 
 Most adventure game creators are storytellers, designers, artists, or solo makers. Many of them are blocked by code-heavy pipelines, where every small interaction needs a new script.
@@ -17,7 +19,7 @@ The goal is simple: make adventure game creation accessible to people with littl
 
 ## What 3DATK Is
 
-3DATK (Adventure Toolkit) is a modular Godot addon for building 3D adventure games.
+3DATK (3D Adventure Toolkit) is a modular Godot addon for building 3D adventure games.
 
 It provides:
 
