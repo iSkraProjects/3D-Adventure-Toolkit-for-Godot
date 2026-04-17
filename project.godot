@@ -1,0 +1,65 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="AGToolkit"
+run/main_scene="res://addons/adventure_toolkit/demo/sample_game/scenes/atk_main_menu.tscn"
+config/features=PackedStringArray("4.6")
+
+[autoload]
+
+ATKScenes="*uid://coyew76k76msx"
+ATKState="*uid://d08b4x03ws3df"
+ATKSave="*uid://fhx1ytiootg0"
+ATKInventory="*uid://cfbulrj26eanq"
+ATKQuests="*res://addons/adventure_toolkit/runtime/autoload/atk_quests.gd"
+ATKJournal="*res://addons/adventure_toolkit/runtime/autoload/atk_journal.gd"
+ATKHints="*res://addons/adventure_toolkit/runtime/autoload/atk_hints.gd"
+ATKDialogue="*res://addons/adventure_toolkit/runtime/autoload/atk_dialogue.gd"
+ATKInteractionFeedback="*res://addons/adventure_toolkit/runtime/autoload/atk_interaction_feedback.gd"
+ATKWorldUi="*res://addons/adventure_toolkit/runtime/autoload/atk_world_ui.gd"
+ATKInteractionHover="*res://addons/adventure_toolkit/runtime/autoload/atk_interaction_hover.gd"
+ATKAudio="*res://addons/adventure_toolkit/runtime/autoload/atk_audio.gd"
+ATKCutscenes="*uid://bnd7b220mw38y"
+ATKSettings="*res://addons/adventure_toolkit/runtime/autoload/atk_settings.gd"
+ATKEpisodes="*res://addons/adventure_toolkit/runtime/autoload/atk_episodes.gd"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/adventure_toolkit/plugin.cfg")
+
+[input]
+
+atk_toggle_inventory={
+"deadzone": 0.5,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":70,"physical_keycode":0,"key_label":0,"unicode":0,"location":0,"echo":false,"script":null)
+]
+}
+atk_toggle_journal={
+"deadzone": 0.5,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":74,"physical_keycode":0,"key_label":0,"unicode":106,"location":0,"echo":false,"script":null)
+]
+}
+atk_request_hint={
+"deadzone": 0.5,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":72,"physical_keycode":0,"key_label":0,"unicode":104,"location":0,"echo":false,"script":null)
+]
+}
+atk_toggle_save_menu={
+"deadzone": 0.5,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":71,"physical_keycode":0,"key_label":0,"unicode":103,"location":0,"echo":false,"script":null)
+]
+}
+atk_pause_menu={
+"deadzone": 0.5,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":4194305,"physical_keycode":0,"key_label":0,"unicode":0,"location":0,"echo":false,"script":null)
+]
+}

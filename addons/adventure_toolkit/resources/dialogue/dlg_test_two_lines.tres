@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="ATKDialogueDefinition" format=3 uid="uid://w461hem5blg5"]
+
+[ext_resource type="Script" uid="uid://bow4qopsmmfm6" path="res://addons/adventure_toolkit/resources/dialogue/atk_dialogue_definition.gd" id="1_def"]
+[ext_resource type="Script" uid="uid://c06xfway4ukgi" path="res://addons/adventure_toolkit/resources/dialogue/atk_dialogue_node.gd" id="2_node"]
+
+[sub_resource type="Resource" id="Res_node_a"]
+script = ExtResource("2_node")
+node_id = "a"
+speaker_name = "Test NPC"
+text = "If you see this in the dialogue panel, the UI is working."
+next_node_id = "b"
+ends_dialogue = false
+
+[sub_resource type="Resource" id="Res_node_b"]
+script = ExtResource("2_node")
+node_id = "b"
+speaker_name = "Test NPC"
+text = "Second line. Press Continue to close."
+next_node_id = ""
+ends_dialogue = true
+
+[resource]
+script = ExtResource("1_def")
+dialogue_id = "dlg_test_two_lines"
+start_node_id = "a"
+nodes = [SubResource("Res_node_a"), SubResource("Res_node_b")]

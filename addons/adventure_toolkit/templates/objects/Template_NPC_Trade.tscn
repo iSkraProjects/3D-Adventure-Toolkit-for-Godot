@@ -1,0 +1,18 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://addons/adventure_toolkit/runtime/dialogue/atk_npc.gd" id="1"]
+
+[node name="Template_NPC_Trade" type="Node3D"]
+script = ExtResource("1")
+object_id = "npc_template_trade"
+display_name = "Trader"
+inspect_text = "Maybe they want something you're carrying."
+handover_enabled = true
+handover_required_item_id = "item_brass_key"
+handover_require_selected_item = true
+handover_consume_item = true
+handover_only_once = true
+handover_success_line = "Great, this helps a lot."
+handover_missing_item_line = "Bring me the thing I asked for."
+handover_success_global_key = "trade_completed"
+handover_success_global_value = true

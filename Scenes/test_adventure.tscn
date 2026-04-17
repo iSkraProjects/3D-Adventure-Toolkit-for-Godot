@@ -1,0 +1,294 @@
+[gd_scene format=3 uid="uid://dnry1f0tq8l2m"]
+
+[ext_resource type="Script" uid="uid://ydgk456svlej" path="res://addons/adventure_toolkit/runtime/scenes/atk_scene_root.gd" id="1_scene_root"]
+[ext_resource type="Script" uid="uid://c1l6btixg4ari" path="res://addons/adventure_toolkit/runtime/scenes/atk_spawn_point.gd" id="2_spawn_point"]
+[ext_resource type="AudioStream" uid="uid://mxlflbuo7i4t" path="res://Scenes/forest.wav" id="3_cb6wr"]
+[ext_resource type="Script" uid="uid://bdrrh783h06u2" path="res://addons/adventure_toolkit/runtime/navigation/atk_player_controller.gd" id="3_player_controller"]
+[ext_resource type="Script" uid="uid://uxq5wtdgytai" path="res://addons/adventure_toolkit/runtime/interaction/atk_interaction_point.gd" id="5_interaction_point"]
+[ext_resource type="Script" uid="uid://rpqi37cw5g04" path="res://addons/adventure_toolkit/runtime/inventory/atk_pickup.gd" id="9_pickup"]
+[ext_resource type="Script" uid="uid://c32j8jpau4csn" path="res://addons/adventure_toolkit/runtime/dialogue/atk_npc.gd" id="12_npc"]
+[ext_resource type="Resource" uid="uid://c05y74t2af1tw" path="res://addons/adventure_toolkit/resources/dialogue/dlg_test_gives_key.tres" id="14_dlg_gives_key"]
+[ext_resource type="Script" uid="uid://i1ircyrboch0" path="res://addons/adventure_toolkit/demo/sample_game/scripts/demo_crate_door.gd" id="15_crate"]
+[ext_resource type="Script" uid="uid://cnshn873cuw1v" path="res://addons/adventure_toolkit/demo/sample_game/scripts/demo_ball_trader.gd" id="16_trader"]
+[ext_resource type="Script" uid="uid://bw7rvglickl0h" path="res://addons/adventure_toolkit/runtime/interaction/atk_door.gd" id="17_door"]
+[ext_resource type="Script" uid="uid://cilmgull6qgte" path="res://addons/adventure_toolkit/demo/sample_game/scripts/demo_register_finale_scene.gd" id="18_reg"]
+[ext_resource type="Script" uid="uid://bv6j7w27p86tc" path="res://addons/adventure_toolkit/demo/sample_game/scripts/demo_journal_quest_bootstrap.gd" id="19_journal_boot"]
+[ext_resource type="Resource" uid="uid://7isx77si1yii" path="res://addons/adventure_toolkit/demo/sample_game/resources/quests/demo_journal_quest.tres" id="20_journal_quest"]
+[ext_resource type="Resource" uid="uid://cb81ruugu8477" path="res://addons/adventure_toolkit/demo/sample_game/resources/hints/demo_test_adventure_hints.tres" id="21_scene_hints"]
+
+[sub_resource type="StandardMaterial3D" id="5_spawn_material"]
+albedo_color = Color(0.192157, 0.694118, 0.984314, 1)
+
+[sub_resource type="SphereMesh" id="6_spawn_mesh"]
+material = SubResource("5_spawn_material")
+radius = 0.2
+height = 0.4
+
+[sub_resource type="CapsuleShape3D" id="8_player_collision"]
+radius = 0.35
+height = 1.9
+
+[sub_resource type="StandardMaterial3D" id="3_player_material"]
+albedo_color = Color(0.901961, 0.52549, 0.203922, 1)
+
+[sub_resource type="CapsuleMesh" id="4_player_mesh"]
+material = SubResource("3_player_material")
+radius = 0.35
+
+[sub_resource type="PlaneMesh" id="2_floor_mesh"]
+size = Vector2(12, 12)
+
+[sub_resource type="StandardMaterial3D" id="1_floor_material"]
+albedo_color = Color(0.388235, 0.388235, 0.388235, 1)
+
+[sub_resource type="BoxShape3D" id="7_floor_collision"]
+size = Vector3(12, 0.2, 12)
+
+[sub_resource type="NavigationMesh" id="9_floor_navigation_mesh"]
+vertices = PackedVector3Array(-6, 0, -6, -6, 0, 6, 6, 0, 6, 6, 0, -6)
+polygons = [PackedInt32Array(0, 1, 2, 3)]
+
+[sub_resource type="BoxShape3D" id="Shape_crate"]
+
+[sub_resource type="StandardMaterial3D" id="Mat_crate_body"]
+albedo_color = Color(0.22, 0.48, 0.26, 1)
+
+[sub_resource type="BoxMesh" id="Mesh_crate_body"]
+material = SubResource("Mat_crate_body")
+size = Vector3(1, 0.75, 1)
+
+[sub_resource type="StandardMaterial3D" id="Mat_crate_lid"]
+albedo_color = Color(0.16, 0.38, 0.2, 1)
+
+[sub_resource type="BoxMesh" id="Mesh_crate_lid"]
+material = SubResource("Mat_crate_lid")
+size = Vector3(1.02, 0.12, 1.02)
+
+[sub_resource type="SphereShape3D" id="Shape_ball_sm"]
+radius = 0.22
+
+[sub_resource type="StandardMaterial3D" id="Mat_rubber_ball"]
+albedo_color = Color(0.75, 0.2, 0.45, 1)
+
+[sub_resource type="SphereMesh" id="Mesh_rubber_ball"]
+material = SubResource("Mat_rubber_ball")
+radius = 0.22
+height = 0.44
+
+[sub_resource type="StandardMaterial3D" id="16_npc_material"]
+albedo_color = Color(0.45, 0.55, 0.95, 1)
+
+[sub_resource type="BoxMesh" id="17_npc_mesh"]
+material = SubResource("16_npc_material")
+
+[sub_resource type="StandardMaterial3D" id="18_keygiver_material"]
+albedo_color = Color(0.92, 0.55, 0.2, 1)
+
+[sub_resource type="BoxMesh" id="19_keygiver_mesh"]
+material = SubResource("18_keygiver_material")
+
+[sub_resource type="BoxShape3D" id="Shape_door_wall"]
+size = Vector3(0.2, 2.2, 2.8)
+
+[sub_resource type="StandardMaterial3D" id="Mat_door_wall"]
+albedo_color = Color(0.42, 0.32, 0.22, 1)
+
+[sub_resource type="BoxMesh" id="Mesh_door_wall"]
+material = SubResource("Mat_door_wall")
+size = Vector3(0.2, 2.2, 2.8)
+
+[node name="TestAdventure" type="Node3D" unique_id=1760871487]
+script = ExtResource("1_scene_root")
+scene_id = "scene_test_adventure"
+scene_label = "AGToolkit Demo — Act 1"
+metadata = {
+"purpose": "agtoolkit_interactive_demo"
+}
+scene_hint_bank = ExtResource("21_scene_hints")
+ambience_stream = ExtResource("3_cb6wr")
+
+[node name="DemoJournalQuestBootstrap" type="Node" parent="." unique_id=1657314422]
+script = ExtResource("19_journal_boot")
+quest_definition = ExtResource("20_journal_quest")
+
+[node name="DemoFinaleSceneRegister" type="Node" parent="." unique_id=1259012792]
+script = ExtResource("18_reg")
+
+[node name="SpawnEntry" type="Marker3D" parent="." unique_id=679124353]
+transform = Transform3D(-0.28473487, 0, -0.9586063, 0, 1, 0, 0.9586063, 0, -0.28473487, 4.814678, 0, -4.732585)
+script = ExtResource("2_spawn_point")
+spawn_id = "spawn_entry"
+
+[node name="SpawnVisual" type="MeshInstance3D" parent="SpawnEntry" unique_id=1044268552]
+mesh = SubResource("6_spawn_mesh")
+
+[node name="Player" type="CharacterBody3D" parent="." unique_id=1508120713]
+script = ExtResource("3_player_controller")
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="Player" unique_id=191553657]
+path_desired_distance = 0.15
+target_desired_distance = 0.15
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Player" unique_id=1594338904]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.95, 0)
+shape = SubResource("8_player_collision")
+
+[node name="PlayerVisual" type="MeshInstance3D" parent="Player" unique_id=887671502]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+mesh = SubResource("4_player_mesh")
+
+[node name="Floor" type="MeshInstance3D" parent="." unique_id=745701157]
+mesh = SubResource("2_floor_mesh")
+surface_material_override/0 = SubResource("1_floor_material")
+
+[node name="FloorBody" type="StaticBody3D" parent="." unique_id=1796969195]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="FloorBody" unique_id=414883611]
+shape = SubResource("7_floor_collision")
+
+[node name="NavigationRegion3D" type="NavigationRegion3D" parent="." unique_id=423418175]
+navigation_mesh = SubResource("9_floor_navigation_mesh")
+
+[node name="SunLight" type="DirectionalLight3D" parent="." unique_id=1346673550]
+transform = Transform3D(0.707107, -0.612372, 0.353553, 0, 0.5, 0.866025, -0.707107, -0.612372, 0.353553, 0, 4, 0)
+light_energy = 2.0
+
+[node name="Camera" type="Camera3D" parent="." unique_id=1664156316]
+transform = Transform3D(1, 0, 0, 0, 0.939693, 0.34202, 0, -0.34202, 0.939693, 0, 4.5, 8)
+current = true
+
+[node name="DemoCrate" type="Node3D" parent="." unique_id=1198646449]
+transform = Transform3D(0.70710677, 0, -0.70710677, 0, 1, 0, 0.70710677, 0, 0.70710677, -4.601327, 0, -4.70999)
+script = ExtResource("15_crate")
+required_item_id = "item_brass_key"
+consume_item_on_unlock = true
+locked_response = "The crate is locked. A brass key might open it."
+wrong_item_response = "That doesn't fit the lock."
+already_open_response = "The crate is already open."
+object_id = "prop_crate"
+display_name = "Supply crate"
+inspect_text = "A sturdy wooden crate. It looks locked."
+interaction_point_path = NodePath("InteractionPoint")
+
+[node name="InteractionPoint" type="Marker3D" parent="DemoCrate" unique_id=180275248]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.1, 0, 0)
+script = ExtResource("5_interaction_point")
+interaction_id = "ip_demo_crate"
+
+[node name="Body" type="StaticBody3D" parent="DemoCrate" unique_id=1296042971]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DemoCrate/Body" unique_id=127102806]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+shape = SubResource("Shape_crate")
+
+[node name="CrateMesh" type="MeshInstance3D" parent="DemoCrate/Body" unique_id=193082552]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.375, 0)
+mesh = SubResource("Mesh_crate_body")
+
+[node name="LidMesh" type="MeshInstance3D" parent="DemoCrate/Body" unique_id=815292232]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.81, 0)
+mesh = SubResource("Mesh_crate_lid")
+
+[node name="BallPickup" type="Node3D" parent="DemoCrate" unique_id=553160206]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, 0)
+script = ExtResource("9_pickup")
+item_id = "item_demo_ball"
+object_id = "pickup_rubber_ball"
+display_name = "Rubber ball"
+inspect_text = "A rubber ball."
+interaction_point_path = NodePath("InteractionPoint")
+is_visible_in_world = false
+is_interactable = false
+
+[node name="InteractionPoint" type="Marker3D" parent="DemoCrate/BallPickup" unique_id=1323783958]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, 0.45)
+script = ExtResource("5_interaction_point")
+interaction_id = "ip_rubber_ball"
+
+[node name="Body" type="StaticBody3D" parent="DemoCrate/BallPickup" unique_id=1997660839]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DemoCrate/BallPickup/Body" unique_id=926393310]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.22, 0)
+shape = SubResource("Shape_ball_sm")
+
+[node name="Mesh" type="MeshInstance3D" parent="DemoCrate/BallPickup/Body" unique_id=1594739486]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.22, 0)
+mesh = SubResource("Mesh_rubber_ball")
+
+[node name="BallReceiver" type="Node3D" parent="." unique_id=1346751662]
+transform = Transform3D(0.9659258, 0, 0.25881904, 0, 1, 0, -0.25881904, 0, 0.9659258, -4.782693, 0, 1.9783142)
+script = ExtResource("16_trader")
+object_id = "npc_ball_receiver"
+display_name = "Courier"
+inspect_text = "Maybe they want something you're carrying."
+interaction_point_path = NodePath("InteractionPoint")
+
+[node name="InteractionPoint" type="Marker3D" parent="BallReceiver" unique_id=1352991322]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.2, 0, 0)
+script = ExtResource("5_interaction_point")
+interaction_id = "ip_ball_receiver"
+
+[node name="Body" type="StaticBody3D" parent="BallReceiver" unique_id=2055566204]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="BallReceiver/Body" unique_id=223751161]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+shape = SubResource("Shape_crate")
+
+[node name="Mesh" type="MeshInstance3D" parent="BallReceiver/Body" unique_id=2123936094]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+mesh = SubResource("17_npc_mesh")
+
+[node name="DialogueKeyNPC" type="Node3D" parent="." unique_id=298236650]
+transform = Transform3D(-1, 0, 8.742278e-08, 0, 1, 0, -8.742278e-08, 0, -1, 5.024733, 0, 0.07323718)
+script = ExtResource("12_npc")
+dialogue = ExtResource("14_dlg_gives_key")
+object_id = "npc_dialogue_key_giver"
+display_name = "Quartermaster"
+inspect_text = "Might have something useful if you ask."
+interaction_point_path = NodePath("InteractionPoint")
+
+[node name="InteractionPoint" type="Marker3D" parent="DialogueKeyNPC" unique_id=179756045]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.2, 0, 0)
+script = ExtResource("5_interaction_point")
+interaction_id = "ip_dialogue_key_giver"
+
+[node name="Body" type="StaticBody3D" parent="DialogueKeyNPC" unique_id=1452390922]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DialogueKeyNPC/Body" unique_id=1533934545]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+shape = SubResource("Shape_crate")
+
+[node name="Mesh" type="MeshInstance3D" parent="DialogueKeyNPC/Body" unique_id=105381033]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+mesh = SubResource("19_keygiver_mesh")
+
+[node name="WestPassageDoor" type="Node3D" parent="." unique_id=645587108]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -5.85, 0, 0)
+script = ExtResource("17_door")
+required_global_key = "demo_ball_delivered"
+required_global_value = true
+locked_response = "It's barred from the other side. The courier might know how to open it."
+wrong_item_response = "That won't help here."
+already_open_response = "The way west is clear."
+destination_scene_id = "scene_demo_finale"
+destination_spawn_id = "spawn_finale"
+door_transition_mode = 1
+object_id = "door_west_passage"
+display_name = "Western passage"
+inspect_text = "A heavy door blocking the west path."
+interaction_point_path = NodePath("InteractionPoint")
+
+[node name="InteractionPoint" type="Marker3D" parent="WestPassageDoor" unique_id=1792908501]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.6, 0, 0)
+script = ExtResource("5_interaction_point")
+interaction_id = "ip_west_door"
+
+[node name="Body" type="StaticBody3D" parent="WestPassageDoor" unique_id=1732319062]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="WestPassageDoor/Body" unique_id=1576825778]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 0, 1.1, 0)
+shape = SubResource("Shape_door_wall")
+
+[node name="Mesh" type="MeshInstance3D" parent="WestPassageDoor/Body" unique_id=356968260]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 0, 1.1, 0)
+mesh = SubResource("Mesh_door_wall")

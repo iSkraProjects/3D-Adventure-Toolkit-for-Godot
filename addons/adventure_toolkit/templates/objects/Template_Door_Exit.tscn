@@ -1,0 +1,14 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://addons/adventure_toolkit/runtime/interaction/atk_door.gd" id="1"]
+
+[node name="Template_Door_Exit" type="Node3D"]
+script = ExtResource("1")
+object_id = "door_template_exit"
+display_name = "Exit Door"
+inspect_text = "A doorway to another room."
+is_locked = false
+is_open = false
+door_transition_mode = 1
+destination_scene_id = "scene_target"
+destination_spawn_id = "spawn_entry"

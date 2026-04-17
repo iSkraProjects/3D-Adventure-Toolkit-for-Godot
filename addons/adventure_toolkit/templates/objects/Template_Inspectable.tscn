@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://addons/adventure_toolkit/runtime/interaction/atk_inspectable.gd" id="1"]
+
+[node name="Template_Inspectable" type="Node3D"]
+script = ExtResource("1")
+object_id = "prop_template_inspectable"
+display_name = "Inspectable Prop"
+inspect_text = "It might be useful later."
+inspect_only = true

@@ -1,0 +1,79 @@
+[gd_scene format=4 uid="uid://ki54reuqor61"]
+
+[ext_resource type="Script" path="res://addons/adventure_toolkit/ui/runtime/atk_dialogue_ui.gd" id="1_script"]
+
+[sub_resource type="InputEventAction" id="InputEventAction_continue"]
+action = &"ui_accept"
+
+[sub_resource type="Shortcut" id="Shortcut_continue"]
+events = [SubResource("InputEventAction_continue")]
+
+[node name="ATKDialogueUI" type="CanvasLayer"]
+layer = 25
+script = ExtResource("1_script")
+
+[node name="Root" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="DialogueAnchor" type="Control" parent="Root"]
+layout_mode = 1
+anchors_preset = 12
+anchor_left = 0.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 32.0
+offset_top = -360.0
+offset_right = -32.0
+offset_bottom = -72.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Panel" type="PanelContainer" parent="Root/DialogueAnchor"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Margin" type="MarginContainer" parent="Root/DialogueAnchor/Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 12
+
+[node name="VBox" type="VBoxContainer" parent="Root/DialogueAnchor/Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Speaker" type="Label" parent="Root/DialogueAnchor/Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Speaker"
+
+[node name="Body" type="RichTextLabel" parent="Root/DialogueAnchor/Panel/Margin/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+custom_minimum_size = Vector2(0, 120)
+bbcode_enabled = false
+fit_content = true
+scroll_active = true
+autowrap_mode = 1
+
+[node name="ContinueButton" type="Button" parent="Root/DialogueAnchor/Panel/Margin/VBox"]
+layout_mode = 2
+text = "Continue"
+shortcut = SubResource("Shortcut_continue")
+
+[node name="Choices" type="VBoxContainer" parent="Root/DialogueAnchor/Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 6

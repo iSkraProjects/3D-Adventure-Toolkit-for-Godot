@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="ATKInventoryItemDefinition" load_steps=2 format=3 uid="uid://atkitemdefbrasskey"]
+
+[ext_resource type="Script" path="res://addons/adventure_toolkit/resources/inventory/atk_inventory_item_definition.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+item_id = "item_brass_key"
+display_name = "Brass key"
+description = "A small brass key. There is only one like it in this adventure."
+category = "key"
+stackable = false
+unique = true

@@ -1,0 +1,97 @@
+[gd_scene format=4 uid="uid://bbf0ujp140r2a"]
+
+[ext_resource type="Script" path="res://addons/adventure_toolkit/ui/runtime/atk_pause_overlay.gd" id="1_script"]
+
+[node name="ATKPauseOverlay" type="CanvasLayer"]
+layer = 28
+script = ExtResource("1_script")
+
+[node name="Root" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Panel" type="PanelContainer" parent="Root"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -180.0
+offset_right = 200.0
+offset_bottom = 180.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Margin" type="MarginContainer" parent="Root/Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 14
+
+[node name="VBox" type="VBoxContainer" parent="Root/Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="Root/Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Paused"
+horizontal_alignment = 1
+
+[node name="ResumeButton" type="Button" parent="Root/Panel/Margin/VBox"]
+layout_mode = 2
+text = "Resume"
+
+[node name="SaveLoadButton" type="Button" parent="Root/Panel/Margin/VBox"]
+layout_mode = 2
+text = "Save/Load Game"
+
+[node name="OptionsButton" type="Button" parent="Root/Panel/Margin/VBox"]
+layout_mode = 2
+text = "Options"
+
+[node name="MainMenuButton" type="Button" parent="Root/Panel/Margin/VBox"]
+layout_mode = 2
+text = "Quit to Title"
+
+[node name="QuitButton" type="Button" parent="Root/Panel/Margin/VBox"]
+layout_mode = 2
+text = "Quit to desktop"
+
+[node name="SettingsNote" type="Label" parent="Root/Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.75, 0.78, 1)
+theme_override_font_sizes/font_size = 12
+autowrap_mode = 2
+text = "Settings shell: extend this menu or use ATKSave.load_settings / save_settings from your game code."
+
+[node name="ModalBackdrop" type="ColorRect" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0, 0, 0, 0.45)
+visible = false
+
+[node name="QuitConfirmDialog" type="ConfirmationDialog" parent="."]
+title = "Quit game?"
+dialog_text = "Are you sure you want to quit? Unsaved progress may be lost."
+ok_button_text = "Quit"
+cancel_button_text = "Cancel"
+
+[node name="MainMenuConfirmDialog" type="ConfirmationDialog" parent="."]
+title = "Quit to main menu?"
+dialog_text = "Return to the main menu?\nUnsaved progress may be lost."
+ok_button_text = "Main menu"
+cancel_button_text = "Cancel"

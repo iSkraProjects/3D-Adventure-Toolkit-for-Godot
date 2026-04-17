@@ -1,0 +1,79 @@
+[gd_scene format=4 uid="uid://c8v81usnlgehy"]
+
+[ext_resource type="Script" path="res://addons/adventure_toolkit/demo/sample_game/scenes/atk_main_menu.gd" id="1_script"]
+
+[node name="ATKMainMenu" type="CanvasLayer"]
+layer = 1
+script = ExtResource("1_script")
+
+[node name="Splash" type="ColorRect" parent="."]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 1)
+
+[node name="MenuRoot" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+
+[node name="Center" type="CenterContainer" parent="MenuRoot"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="MenuRoot/Center"]
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="MenuRoot/Center/Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 20
+
+[node name="VBox" type="VBoxContainer" parent="MenuRoot/Center/Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="MenuRoot/Center/Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "AGToolkit"
+horizontal_alignment = 1
+
+[node name="NewGameButton" type="Button" parent="MenuRoot/Center/Panel/Margin/VBox"]
+custom_minimum_size = Vector2(280, 0)
+layout_mode = 2
+text = "New Game"
+
+[node name="ContinueButton" type="Button" parent="MenuRoot/Center/Panel/Margin/VBox"]
+custom_minimum_size = Vector2(280, 0)
+layout_mode = 2
+text = "Continue Latest"
+
+[node name="LoadGameButton" type="Button" parent="MenuRoot/Center/Panel/Margin/VBox"]
+custom_minimum_size = Vector2(280, 0)
+layout_mode = 2
+text = "Load Game"
+
+[node name="OptionsButton" type="Button" parent="MenuRoot/Center/Panel/Margin/VBox"]
+custom_minimum_size = Vector2(280, 0)
+layout_mode = 2
+text = "Options"
+
+[node name="QuitButton" type="Button" parent="MenuRoot/Center/Panel/Margin/VBox"]
+custom_minimum_size = Vector2(280, 0)
+layout_mode = 2
+text = "Quit to Desktop"

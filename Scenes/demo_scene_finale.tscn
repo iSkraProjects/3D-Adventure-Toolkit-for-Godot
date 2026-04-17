@@ -1,0 +1,124 @@
+[gd_scene format=4 uid="uid://0ew45wjhag7m"]
+
+[ext_resource type="Script" uid="uid://ydgk456svlej" path="res://addons/adventure_toolkit/runtime/scenes/atk_scene_root.gd" id="1_scene_root"]
+[ext_resource type="Script" uid="uid://c1l6btixg4ari" path="res://addons/adventure_toolkit/runtime/scenes/atk_spawn_point.gd" id="2_spawn"]
+[ext_resource type="Script" uid="uid://bdrrh783h06u2" path="res://addons/adventure_toolkit/runtime/navigation/atk_player_controller.gd" id="3_player"]
+[ext_resource type="Script" path="res://addons/adventure_toolkit/demo/sample_game/scripts/demo_finale_pickup.gd" id="5_finale"]
+[ext_resource type="Script" uid="uid://uxq5wtdgytai" path="res://addons/adventure_toolkit/runtime/interaction/atk_interaction_point.gd" id="6_ip"]
+
+[sub_resource type="StandardMaterial3D" id="Mat_spawn"]
+albedo_color = Color(0.2, 0.75, 0.95, 1)
+
+[sub_resource type="SphereMesh" id="Mesh_spawn"]
+material = SubResource("Mat_spawn")
+radius = 0.2
+height = 0.4
+
+[sub_resource type="CapsuleShape3D" id="Shape_player"]
+radius = 0.35
+height = 1.9
+
+[sub_resource type="StandardMaterial3D" id="Mat_player"]
+albedo_color = Color(0.9, 0.52, 0.2, 1)
+
+[sub_resource type="CapsuleMesh" id="Mesh_player"]
+material = SubResource("Mat_player")
+radius = 0.35
+
+[sub_resource type="PlaneMesh" id="Mesh_floor"]
+size = Vector2(14, 14)
+
+[sub_resource type="StandardMaterial3D" id="Mat_floor"]
+albedo_color = Color(0.35, 0.38, 0.42, 1)
+
+[sub_resource type="BoxShape3D" id="Shape_floor"]
+size = Vector3(14, 0.2, 14)
+
+[sub_resource type="NavigationMesh" id="Nav_mesh"]
+vertices = PackedVector3Array(-7, 0, -7, -7, 0, 7, 7, 0, 7, 7, 0, -7)
+polygons = [PackedInt32Array(0, 1, 2, 3)]
+
+[sub_resource type="SphereShape3D" id="Shape_ball"]
+radius = 0.28
+
+[sub_resource type="StandardMaterial3D" id="Mat_ball"]
+albedo_color = Color(1, 0.92, 0.15, 1)
+
+[sub_resource type="SphereMesh" id="Mesh_ball"]
+material = SubResource("Mat_ball")
+radius = 0.28
+height = 0.56
+
+[node name="DemoSceneFinale" type="Node3D"]
+script = ExtResource("1_scene_root")
+scene_id = "scene_demo_finale"
+scene_label = "Demo — Finale"
+metadata = {
+"purpose": "agtoolkit_demo_finale"
+}
+
+[node name="SpawnFinale" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2)
+script = ExtResource("2_spawn")
+spawn_id = "spawn_finale"
+
+[node name="SpawnVisual" type="MeshInstance3D" parent="SpawnFinale"]
+mesh = SubResource("Mesh_spawn")
+
+[node name="Player" type="CharacterBody3D" parent="."]
+script = ExtResource("3_player")
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="Player"]
+path_desired_distance = 0.15
+target_desired_distance = 0.15
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Player"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.95, 0)
+shape = SubResource("Shape_player")
+
+[node name="PlayerVisual" type="MeshInstance3D" parent="Player"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+mesh = SubResource("Mesh_player")
+
+[node name="Floor" type="MeshInstance3D" parent="."]
+mesh = SubResource("Mesh_floor")
+surface_material_override/0 = SubResource("Mat_floor")
+
+[node name="FloorBody" type="StaticBody3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="FloorBody"]
+shape = SubResource("Shape_floor")
+
+[node name="NavigationRegion3D" type="NavigationRegion3D" parent="."]
+navigation_mesh = SubResource("Nav_mesh")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866025, -0.433013, 0.25, 0, 0.5, 0.866025, -0.5, -0.75, 0.433013, 0, 6, 4)
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.939693, 0.34202, 0, -0.34202, 0.939693, 0, 5, 9)
+current = true
+
+[node name="YellowBall" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 0, -1)
+script = ExtResource("5_finale")
+item_id = "item_yellow_ball"
+object_id = "pickup_yellow_ball"
+display_name = "Golden orb"
+inspect_text = "The end of the demo."
+consume_on_pickup = true
+
+[node name="InteractionPoint" type="Marker3D" parent="YellowBall"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, 0.5)
+script = ExtResource("6_ip")
+interaction_id = "ip_yellow_ball"
+
+[node name="Body" type="StaticBody3D" parent="YellowBall"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="YellowBall/Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.28, 0)
+shape = SubResource("Shape_ball")
+
+[node name="Mesh" type="MeshInstance3D" parent="YellowBall/Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.28, 0)
+mesh = SubResource("Mesh_ball")

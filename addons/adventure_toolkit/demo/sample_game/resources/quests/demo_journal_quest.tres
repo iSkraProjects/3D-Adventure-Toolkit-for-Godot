@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="ATKQuestDefinition" load_steps=2 format=3 uid="uid://atkdemojournalquest01"]
+
+[ext_resource type="Script" path="res://addons/adventure_toolkit/resources/quests/atk_quest_definition.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+quest_id = "demo_journal_tour"
+display_name = "Journal tour"
+description = "A tiny in-scene objective that shows up in the Objectives & Journal panel."
+objective_stage_labels = PackedStringArray("Open the journal (J or bottom-left) and read the welcome note. Use the hint button beside it if you want a nudge.")

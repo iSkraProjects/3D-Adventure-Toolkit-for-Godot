@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="ATKInventoryItemDefinition" format=3 uid="uid://drvc3ekyml8cj"]
+
+[ext_resource type="Script" path="res://addons/adventure_toolkit/resources/inventory/atk_inventory_item_definition.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+item_id = "item_yellow_ball"
+display_name = "Golden orb"
+description = "The demo finale token."
+category = "demo"
+stackable = false
+unique = true

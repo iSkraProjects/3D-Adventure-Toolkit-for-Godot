@@ -1,0 +1,28 @@
+[gd_scene load_steps=5 format=3 uid="uid://dg4kq5bb6mxgp"]
+
+[ext_resource type="Script" uid="uid://bsguh7o3e63m4" path="res://addons/adventure_toolkit/runtime/scenes/atk_bootstrap.gd" id="1_bootstrap"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_n6gqm"]
+sky_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
+ground_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
+
+[sub_resource type="Sky" id="Sky_egohv"]
+sky_material = SubResource("ProceduralSkyMaterial_n6gqm")
+
+[sub_resource type="Environment" id="Environment_r3dex"]
+background_mode = 2
+sky = SubResource("Sky_egohv")
+tonemap_mode = 2
+
+[node name="ATKBootstrap" type="Node" unique_id=483794570]
+script = ExtResource("1_bootstrap")
+start_scene_id = "scene_test_adventure"
+start_scene_path = "res://Scenes/test_adventure.tscn"
+start_spawn_id = "spawn_entry"
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1103652501]
+environment = SubResource("Environment_r3dex")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=127325175]
+transform = Transform3D(-0.8660254, -0.43301278, 0.25, 0, 0.49999997, 0.86602545, -0.50000006, 0.75, -0.43301266, 0, 0, 0)
+shadow_enabled = true

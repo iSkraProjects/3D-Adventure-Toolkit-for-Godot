@@ -1,0 +1,54 @@
+[gd_resource type="Resource" script_class="ATKDialogueDefinition" format=3 uid="uid://c05y74t2af1tw"]
+
+[ext_resource type="Script" uid="uid://bow4qopsmmfm6" path="res://addons/adventure_toolkit/resources/dialogue/atk_dialogue_definition.gd" id="1_def"]
+[ext_resource type="Script" uid="uid://c06xfway4ukgi" path="res://addons/adventure_toolkit/resources/dialogue/atk_dialogue_node.gd" id="2_node"]
+[ext_resource type="Script" uid="uid://b2102xfjhdoip" path="res://addons/adventure_toolkit/resources/dialogue/atk_dialogue_choice.gd" id="2_oowwc"]
+[ext_resource type="Script" uid="uid://bw36dkwk3v8ul" path="res://addons/adventure_toolkit/resources/actions/atk_action_sequence.gd" id="3_seq"]
+[ext_resource type="Script" uid="uid://b5u3p7gnjkegq" path="res://addons/adventure_toolkit/resources/actions/atk_action_step_add_item.gd" id="4_add"]
+[ext_resource type="Script" uid="uid://b3ekhe53dvl82" path="res://addons/adventure_toolkit/resources/conditions/atk_condition_unique_item_obtainable.gd" id="5_cond"]
+[ext_resource type="Script" uid="uid://bnolbfm0o8ma" path="res://addons/adventure_toolkit/resources/actions/atk_action_step.gd" id="5_sfsst"]
+
+[sub_resource type="Resource" id="Res_greet"]
+script = ExtResource("2_node")
+node_id = "greet"
+speaker_name = "Curator"
+text = "Dialogue can run actions when a line finishes. Press Continue."
+next_node_id = "give_key"
+
+[sub_resource type="Resource" id="Res_unique_gate"]
+script = ExtResource("5_cond")
+item_id = "item_brass_key"
+condition_id = "dlg_brass_key_still_obtainable"
+
+[sub_resource type="Resource" id="Res_add_key"]
+script = ExtResource("4_add")
+item_id = "item_brass_key"
+step_id = "dialogue_give_brass_key"
+
+[sub_resource type="Resource" id="Res_seq_leave"]
+script = ExtResource("3_seq")
+sequence_id = "dlg_give_key_on_leave"
+steps = Array[ExtResource("5_sfsst")]([SubResource("Res_add_key")])
+
+[sub_resource type="Resource" id="Res_give_key"]
+script = ExtResource("2_node")
+node_id = "give_key"
+speaker_name = "Curator"
+text = "Here is a brass key (same item_id as the world pickup). Check your inventory after Continue."
+entry_conditions = SubResource("Res_unique_gate")
+fallback_next_node_id = "thanks_done"
+on_leave_actions = SubResource("Res_seq_leave")
+ends_dialogue = true
+
+[sub_resource type="Resource" id="Res_thanks"]
+script = ExtResource("2_node")
+node_id = "thanks_done"
+speaker_name = "Curator"
+text = "Thank you. You already have the brass key — put it to good use."
+ends_dialogue = true
+
+[resource]
+script = ExtResource("1_def")
+dialogue_id = "dlg_test_gives_key"
+start_node_id = "greet"
+nodes = Array[ExtResource("2_node")]([SubResource("Res_greet"), SubResource("Res_give_key"), SubResource("Res_thanks")])

@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="ATKHintBank" load_steps=2 format=3 uid="uid://atkdemohintbank01"]
+
+[ext_resource type="Script" path="res://addons/adventure_toolkit/resources/hints/atk_hint_bank.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+hint_bank_id = "demo_scene_test_adventure"
+display_name = "Demo scene"
+layers = PackedStringArray("The blue spawn marker shows where you entered the scene.", "Click the ground to walk; click objects to interact when you are close enough.", "The trader by the balls can start a dialogue. Inventory is the bag in the top-right.")
+cooldown_seconds = 2.0
