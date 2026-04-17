@@ -1,4 +1,4 @@
-# ATK for Godot by use<web/>
+# ATK for Godot by USE Web
 
 ## Why This Addon Exists
 
