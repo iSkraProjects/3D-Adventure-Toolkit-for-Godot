@@ -130,5 +130,4 @@ Prefer data first. Write custom code only when behavior cannot be expressed by:
 
 ## Documentation
 
-- `addons/adventure_toolkit/docs/ATK Manual.md` (private creator build guide)
 - `addons/adventure_toolkit/docs/foundation_conventions.md` (architecture and naming rules)
