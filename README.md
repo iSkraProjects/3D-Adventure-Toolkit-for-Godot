@@ -1,4 +1,4 @@
-# ATK for Godot by USE Web
+# 3DATK for Godot by USE Web
 
 ## Why This Addon Exists
 
