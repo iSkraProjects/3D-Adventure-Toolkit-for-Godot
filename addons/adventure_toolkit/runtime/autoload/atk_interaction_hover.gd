@@ -16,14 +16,32 @@ extends CanvasLayer
 @export var custom_cursor_interact: Texture2D
 @export var custom_cursor_inspect: Texture2D
 @export var custom_cursor_hotspot := Vector2.ZERO
+@export var cursor_theme: ATKCursorTheme
+@export_file("*.tres", "*.res") var default_cursor_theme_path := "res://addons/adventure_toolkit/resources/cursors/default_cursor_theme.tres"
+@export var default_cursor_interact_path := "res://addons/adventure_toolkit/resources/cursors/cursor_interact.png"
+@export var default_cursor_inspect_path := "res://addons/adventure_toolkit/resources/cursors/cursor_inspect.png"
+@export var default_cursor_normal_path := "res://addons/adventure_toolkit/resources/cursors/cursor_normal.png"
+@export var default_cursor_open_path := "res://addons/adventure_toolkit/resources/cursors/cursor_open.png"
+@export var default_cursor_attack_path := "res://addons/adventure_toolkit/resources/cursors/cursor_attack.png"
+@export var default_cursor_climb_path := "res://addons/adventure_toolkit/resources/cursors/cursor_climb.png"
+@export var default_cursor_descend_path := "res://addons/adventure_toolkit/resources/cursors/cursor_descend.png"
+@export var debug_cursor_tracing := false
 
 var _root_ui: Control
 var _panel: PanelContainer
 var _primary: Label
 var _secondary: Label
-var _current_cursor_shape := Input.CURSOR_ARROW
+var _current_cursor_kind := "normal"
+var _runtime_cursor_normal: Texture2D
 var _runtime_cursor_interact: Texture2D
 var _runtime_cursor_inspect: Texture2D
+var _runtime_cursor_open: Texture2D
+var _runtime_cursor_attack: Texture2D
+var _runtime_cursor_climb: Texture2D
+var _runtime_cursor_descend: Texture2D
+var _active_cursor_texture: Texture2D
+var _last_debug_reason := ""
+var _last_debug_shape := -1
 
 
 func _ready() -> void:
@@ -70,40 +88,48 @@ func _ready() -> void:
 	_panel.add_theme_stylebox_override("panel", sb)
 
 	_prepare_runtime_cursors()
-	_apply_cursor_shape(Input.CURSOR_ARROW)
+	_apply_cursor_kind("normal")
 
 
 func _process(_delta: float) -> void:
 	if not enabled:
-		_apply_cursor_shape(Input.CURSOR_ARROW)
+		_debug_reason("disabled")
+		_apply_cursor_kind("normal")
 		_hide()
 		return
 
 	var w := get_node_or_null("/root/ATKWorldUi")
 	if w != null and w.has_method("is_world_interaction_locked") and bool(w.call("is_world_interaction_locked")):
-		_apply_cursor_shape(Input.CURSOR_ARROW)
+		_debug_reason("world_ui_locked")
+		_apply_cursor_kind("normal")
 		_hide()
 		return
 
 	var viewport := get_viewport()
 	if viewport == null:
-		_apply_cursor_shape(Input.CURSOR_ARROW)
+		_debug_reason("no_viewport")
+		_apply_cursor_kind("normal")
 		_hide()
 		return
 
 	var mouse := viewport.get_mouse_position()
 	var obj := ATKInteractionPointer.adventure_object_from_screen_pos(mouse, viewport, [])
 	if obj == null or not obj.can_interact():
-		_apply_cursor_shape(Input.CURSOR_ARROW)
+		_debug_reason("no_interactable_under_cursor")
+		_apply_cursor_kind("normal")
 		_hide()
 		return
 
-	# Right-click context while hovering an object: show inspect cursor.
 	if cursor_feedback_enabled:
+		var cursor_kind := "interact"
 		if Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT):
-			_apply_cursor_shape(Input.CURSOR_HELP)
-		else:
-			_apply_cursor_shape(Input.CURSOR_POINTING_HAND)
+			cursor_kind = "inspect"
+		elif obj.has_method("get_hover_cursor_kind"):
+			cursor_kind = str(obj.call("get_hover_cursor_kind")).strip_edges().to_lower()
+			if cursor_kind.is_empty():
+				cursor_kind = "interact"
+		_debug_reason("hovering_%s:%s" % [_debug_object_label(obj), cursor_kind])
+		_apply_cursor_kind(cursor_kind)
 
 	var primary := obj.get_hover_tooltip_primary().strip_edges()
 	if primary.is_empty():
@@ -148,21 +174,70 @@ func _hide() -> void:
 		_panel.visible = false
 
 
-func _apply_cursor_shape(shape: int) -> void:
+func _apply_cursor_kind(kind: String) -> void:
 	if not cursor_feedback_enabled:
+		_debug_reason("cursor_feedback_disabled")
 		return
-	# Re-apply when needed: other UI controls can override cursor shape.
-	if _current_cursor_shape == shape and Input.get_current_cursor_shape() == shape:
+
+	var desired_kind := kind
+	var desired_texture := _resolve_runtime_cursor_texture(desired_kind)
+	if desired_texture == null and desired_kind != "normal":
+		desired_kind = "interact"
+		desired_texture = _resolve_runtime_cursor_texture(desired_kind)
+	if desired_texture == null:
+		desired_kind = "normal"
+		desired_texture = _resolve_runtime_cursor_texture(desired_kind)
+
+	# Force reliability on Windows/export: always drive arrow cursor texture directly.
+	# Many UI controls override cursor shape, so we keep default shape at ARROW and swap texture.
+	if _current_cursor_kind == desired_kind and _active_cursor_texture == desired_texture and Input.get_current_cursor_shape() == Input.CURSOR_ARROW:
 		return
-	_current_cursor_shape = shape
-	Input.set_default_cursor_shape(shape)
+	_current_cursor_kind = desired_kind
+	_active_cursor_texture = desired_texture
+	Input.set_default_cursor_shape(Input.CURSOR_ARROW)
+	Input.set_custom_mouse_cursor(
+		desired_texture,
+		Input.CURSOR_ARROW,
+		_resolve_hotspot(desired_kind) if desired_texture != null else Vector2.ZERO
+	)
+	_debug_shape(desired_kind, desired_texture != null)
 
 
 func _prepare_runtime_cursors() -> void:
-	_runtime_cursor_interact = custom_cursor_interact if custom_cursor_interact != null else _build_interact_cursor_texture()
-	_runtime_cursor_inspect = custom_cursor_inspect if custom_cursor_inspect != null else _build_inspect_cursor_texture()
-	Input.set_custom_mouse_cursor(_runtime_cursor_interact, Input.CURSOR_POINTING_HAND, custom_cursor_hotspot)
-	Input.set_custom_mouse_cursor(_runtime_cursor_inspect, Input.CURSOR_HELP, custom_cursor_hotspot)
+	var theme := _resolve_cursor_theme()
+	if theme != null:
+		_runtime_cursor_normal = theme.get_texture("normal")
+		_runtime_cursor_interact = theme.get_texture("interact")
+		_runtime_cursor_inspect = theme.get_texture("inspect")
+		_runtime_cursor_open = theme.get_texture("open")
+		_runtime_cursor_attack = theme.get_texture("attack")
+		_runtime_cursor_climb = theme.get_texture("climb")
+		_runtime_cursor_descend = theme.get_texture("descend")
+
+	if _runtime_cursor_normal == null:
+		_runtime_cursor_normal = _load_cursor_texture(default_cursor_normal_path)
+	var from_file_interact := _load_cursor_texture(default_cursor_interact_path)
+	var from_file_inspect := _load_cursor_texture(default_cursor_inspect_path)
+	var from_file_open := _load_cursor_texture(default_cursor_open_path)
+	var from_file_attack := _load_cursor_texture(default_cursor_attack_path)
+	var from_file_climb := _load_cursor_texture(default_cursor_climb_path)
+	var from_file_descend := _load_cursor_texture(default_cursor_descend_path)
+	_runtime_cursor_interact = custom_cursor_interact if custom_cursor_interact != null else (_runtime_cursor_interact if _runtime_cursor_interact != null else (
+		from_file_interact if from_file_interact != null else _build_interact_cursor_texture()
+	))
+	_runtime_cursor_inspect = custom_cursor_inspect if custom_cursor_inspect != null else (_runtime_cursor_inspect if _runtime_cursor_inspect != null else (
+		from_file_inspect if from_file_inspect != null else _build_inspect_cursor_texture()
+	))
+	_runtime_cursor_open = _runtime_cursor_open if _runtime_cursor_open != null else from_file_open
+	_runtime_cursor_attack = _runtime_cursor_attack if _runtime_cursor_attack != null else from_file_attack
+	_runtime_cursor_climb = _runtime_cursor_climb if _runtime_cursor_climb != null else from_file_climb
+	_runtime_cursor_descend = _runtime_cursor_descend if _runtime_cursor_descend != null else from_file_descend
+	if _runtime_cursor_normal == null:
+		_runtime_cursor_normal = _runtime_cursor_interact
+
+	# Register secondary shape slots as backup paths.
+	Input.set_custom_mouse_cursor(_runtime_cursor_interact, Input.CURSOR_POINTING_HAND, _resolve_hotspot("interact"))
+	Input.set_custom_mouse_cursor(_runtime_cursor_inspect, Input.CURSOR_HELP, _resolve_hotspot("inspect"))
 
 
 func _build_interact_cursor_texture() -> Texture2D:
@@ -198,3 +273,82 @@ func _build_inspect_cursor_texture() -> Texture2D:
 			if px + 1 < 24:
 				img.set_pixel(px + 1, py, Color(0.95, 0.95, 0.95, 1.0))
 	return ImageTexture.create_from_image(img)
+
+
+func _load_cursor_texture(path: String) -> Texture2D:
+	var p := path.strip_edges()
+	if p.is_empty():
+		return null
+	if not ResourceLoader.exists(p):
+		return null
+	var loaded := load(p)
+	if loaded is Texture2D:
+		return loaded as Texture2D
+	return null
+
+
+func _debug_reason(reason: String) -> void:
+	if not debug_cursor_tracing:
+		return
+	if _last_debug_reason == reason:
+		return
+	_last_debug_reason = reason
+	ATKLog.info("[cursor] %s" % reason, "ATKInteractionHover")
+
+
+func _debug_shape(kind: String, has_texture: bool) -> void:
+	if not debug_cursor_tracing:
+		return
+	var signature := hash("%s|%s" % [kind, str(has_texture)])
+	if _last_debug_shape == signature:
+		return
+	_last_debug_shape = signature
+	ATKLog.info("[cursor] apply kind=%s texture=%s" % [kind, str(has_texture)], "ATKInteractionHover")
+
+
+func _debug_object_label(obj: ATKAdventureObject) -> String:
+	if obj == null:
+		return "null"
+	var oid := obj.object_id.strip_edges()
+	if not oid.is_empty():
+		return oid
+	return obj.name
+
+
+func _resolve_cursor_theme() -> ATKCursorTheme:
+	if cursor_theme != null:
+		return cursor_theme
+	var p := default_cursor_theme_path.strip_edges()
+	if p.is_empty():
+		return null
+	if not ResourceLoader.exists(p):
+		return null
+	var loaded := load(p)
+	if loaded is ATKCursorTheme:
+		return loaded as ATKCursorTheme
+	return null
+
+
+func _resolve_runtime_cursor_texture(kind: String) -> Texture2D:
+	match kind:
+		"interact":
+			return _runtime_cursor_interact
+		"inspect":
+			return _runtime_cursor_inspect
+		"open":
+			return _runtime_cursor_open
+		"attack":
+			return _runtime_cursor_attack
+		"climb":
+			return _runtime_cursor_climb
+		"descend":
+			return _runtime_cursor_descend
+		_:
+			return _runtime_cursor_normal
+
+
+func _resolve_hotspot(kind: String) -> Vector2:
+	var theme := _resolve_cursor_theme()
+	if theme != null:
+		return theme.get_hotspot(kind)
+	return custom_cursor_hotspot

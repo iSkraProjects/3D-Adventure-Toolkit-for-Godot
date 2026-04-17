@@ -27,6 +27,7 @@ var _selected_item_id := ""
 ## For [member ATKInventoryItemDefinition.unique] ids: set when count drops to zero after having been held.
 var _unique_expended: Dictionary = {}
 var _merged_item_defs: Array[ATKInventoryItemDefinition] = []
+var _runtime_item_icons: Dictionary = {} # item_id -> Texture2D
 
 
 func _ready() -> void:
@@ -69,6 +70,22 @@ func _item_def_for_id(item_id: String) -> ATKInventoryItemDefinition:
 		if d != null and d.item_id == item_id:
 			return d
 	return null
+
+
+func get_item_icon(item_id: String) -> Texture2D:
+	var runtime_icon: Variant = _runtime_item_icons.get(item_id, null)
+	if runtime_icon is Texture2D:
+		return runtime_icon as Texture2D
+	var d := _item_def_for_id(item_id)
+	if d != null and d.icon != null:
+		return d.icon
+	return null
+
+
+func register_runtime_item_icon(item_id: String, icon: Texture2D) -> void:
+	if item_id.is_empty() or icon == null:
+		return
+	_runtime_item_icons[item_id] = icon
 
 
 func _item_is_unique(item_id: String) -> bool:

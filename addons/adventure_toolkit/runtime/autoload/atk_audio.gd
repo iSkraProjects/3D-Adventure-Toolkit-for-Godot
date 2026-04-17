@@ -119,7 +119,9 @@ func _apply_scene_audio_after_transition(scene_id: String) -> void:
 			_apply_scene_audio(requested_scene_id)
 			return
 		await tree.process_frame
-	ATKLog.warn("Could not resolve ATKSceneRoot after transition for '%s'." % requested_scene_id, "ATKAudio")
+	# Some scenes (e.g. menu overlays) are intentionally not ATKSceneRoot-driven.
+	# Avoid noisy warnings in that case.
+	ATKLog.debug("No ATKSceneRoot after transition for '%s'; scene may not use scene-root audio hooks." % requested_scene_id, "ATKAudio")
 
 
 func _set_looped_stream(player: AudioStreamPlayer, stream: AudioStream) -> void:

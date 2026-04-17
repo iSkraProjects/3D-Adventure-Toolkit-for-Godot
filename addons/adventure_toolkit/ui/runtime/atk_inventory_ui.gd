@@ -12,17 +12,24 @@ const _DEFAULT_TOGGLE_KEY := KEY_I
 @export var keyboard_action := "atk_toggle_inventory"
 @export var start_visible := false
 @export var item_definitions: Array[ATKInventoryItemDefinition] = []
+@export var icon_tile_size := Vector2i(96, 96)
+@export var icon_max_size := Vector2i(72, 72)
+@export var grid_columns := 4
 
 var _def_by_id: Dictionary = {}
+var _tile_by_item_id: Dictionary = {}
 
 @onready var _root: Control = $Root
 @onready var _panel: PanelContainer = $Root/Panel
 @onready var _btn_pause_menu: TextureButton = $Root/PauseButton
 @onready var _bag: TextureButton = $Root/BagButton
-@onready var _item_list: ItemList = $Root/Panel/Margin/VBox/ItemList
+@onready var _items_scroll: ScrollContainer = $Root/Panel/Margin/VBox/ItemsScroll
+@onready var _items_grid: GridContainer = $Root/Panel/Margin/VBox/ItemsScroll/ItemsGrid
 @onready var _description: RichTextLabel = $Root/Panel/Margin/VBox/Description
 @onready var _btn_clear: Button = $Root/Panel/Margin/VBox/Buttons/ClearButton
 @onready var _btn_close: Button = $Root/Panel/Margin/VBox/Buttons/CloseButton
+@onready var _selected_preview: PanelContainer = $Root/SelectedItemPreview
+@onready var _selected_preview_icon: TextureRect = $Root/SelectedItemPreview/Margin/Icon
 
 
 func _ready() -> void:
@@ -43,9 +50,8 @@ func _ready() -> void:
 			item_definitions = inventory.get_merged_item_definitions()
 
 	_build_definition_lookup()
-	_item_list.item_selected.connect(_on_item_selected)
-	_item_list.item_clicked.connect(_on_item_clicked)
-	_item_list.item_activated.connect(_on_item_activated)
+	_items_grid.columns = maxi(grid_columns, 1)
+	_items_grid.focus_mode = Control.FOCUS_ALL
 	_btn_clear.pressed.connect(_on_clear_pressed)
 	_btn_close.pressed.connect(_on_close_pressed)
 
@@ -111,7 +117,7 @@ func _set_panel_open(open: bool) -> void:
 	_panel.visible = open
 	_root.mouse_filter = Control.MOUSE_FILTER_STOP if open else Control.MOUSE_FILTER_IGNORE
 	if open:
-		_item_list.call_deferred("grab_focus")
+		_items_grid.call_deferred("grab_focus")
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -145,7 +151,7 @@ func _build_definition_lookup() -> void:
 
 
 func _on_inventory_changed(items: Dictionary) -> void:
-	_item_list.clear()
+	_clear_item_tiles()
 	var inventory := get_node_or_null("/root/ATKInventory")
 	if inventory == null:
 		return
@@ -156,9 +162,8 @@ func _on_inventory_changed(items: Dictionary) -> void:
 	for k in keys:
 		var item_id := str(k)
 		var amount := int(items[k])
-		var label := "%s  ×%d" % [_display_name(item_id), amount]
-		var idx := _item_list.add_item(label)
-		_item_list.set_item_metadata(idx, item_id)
+		var icon := _resolve_item_icon(inventory, item_id)
+		_add_item_tile(item_id, amount, icon)
 
 	_sync_selection_highlight(inventory.get_selected_item())
 
@@ -166,28 +171,17 @@ func _on_inventory_changed(items: Dictionary) -> void:
 func _on_selected_changed(item_id: String) -> void:
 	_sync_selection_highlight(item_id)
 	_refresh_description(item_id)
+	_refresh_selected_preview(item_id)
 
 
-func _on_item_selected(index: int) -> void:
-	_apply_selection_index(index)
-
-
-func _on_item_clicked(index: int, _at_position: Vector2, _mouse_button_index: int) -> void:
-	_apply_selection_index(index)
-
-
-func _on_item_activated(index: int) -> void:
-	_apply_selection_index(index)
-
-
-func _apply_selection_index(index: int) -> void:
+func _apply_selection_item_id(item_id: String) -> void:
 	var inventory := get_node_or_null("/root/ATKInventory")
 	if inventory == null:
 		return
-	if index < 0 or index >= _item_list.item_count:
+	if item_id.is_empty():
 		return
-	var item_id := str(_item_list.get_item_metadata(index))
 	inventory.select_item(item_id)
+	_set_panel_open(false)
 
 
 func _on_clear_pressed() -> void:
@@ -201,13 +195,13 @@ func _on_close_pressed() -> void:
 
 
 func _sync_selection_highlight(selected_id: String) -> void:
-	_item_list.deselect_all()
-	if selected_id.is_empty():
-		return
-	for i in range(_item_list.item_count):
-		if str(_item_list.get_item_metadata(i)) == selected_id:
-			_item_list.select(i)
-			return
+	for item_id in _tile_by_item_id.keys():
+		var tile: Button = _tile_by_item_id[item_id]
+		if tile == null:
+			continue
+		var selected := (str(item_id) == selected_id)
+		tile.button_pressed = selected
+		_apply_tile_selection_visual(tile, selected)
 
 
 func _refresh_description(item_id: String) -> void:
@@ -231,3 +225,145 @@ func _display_name(item_id: String) -> String:
 		if not def.display_name.strip_edges().is_empty():
 			return def.display_name.strip_edges()
 	return item_id
+
+
+func _resolve_item_icon(inventory: Node, item_id: String) -> Texture2D:
+	if inventory != null and inventory.has_method("get_item_icon"):
+		var icon_value: Variant = inventory.call("get_item_icon", item_id)
+		if icon_value is Texture2D:
+			return icon_value as Texture2D
+	if _def_by_id.has(item_id):
+		var def: ATKInventoryItemDefinition = _def_by_id[item_id]
+		if def != null and def.icon != null:
+			return def.icon
+	return null
+
+
+func _clear_item_tiles() -> void:
+	for child in _items_grid.get_children():
+		child.queue_free()
+	_tile_by_item_id.clear()
+
+
+func _add_item_tile(item_id: String, amount: int, icon: Texture2D) -> void:
+	var tile := Button.new()
+	tile.toggle_mode = true
+	tile.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	tile.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	tile.custom_minimum_size = Vector2(icon_tile_size.x, icon_tile_size.y)
+	tile.flat = false
+	tile.text = ""
+	tile.vertical_icon_alignment = VERTICAL_ALIGNMENT_TOP
+	tile.alignment = HORIZONTAL_ALIGNMENT_CENTER
+	tile.clip_text = true
+	tile.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	tile.tooltip_text = _display_name(item_id)
+	_apply_tile_selection_visual(tile, false)
+	tile.pressed.connect(func() -> void:
+		_apply_selection_item_id(item_id)
+	)
+	tile.gui_input.connect(func(event: InputEvent) -> void:
+		if event is InputEventMouseButton:
+			var mb := event as InputEventMouseButton
+			if mb.button_index == MOUSE_BUTTON_RIGHT and mb.pressed:
+				_inspect_item(item_id)
+				get_viewport().set_input_as_handled()
+	)
+
+	var icon_holder := MarginContainer.new()
+	icon_holder.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	icon_holder.offset_left = 8
+	icon_holder.offset_top = 6
+	icon_holder.offset_right = -8
+	icon_holder.offset_bottom = 6 + icon_max_size.y
+	icon_holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	tile.add_child(icon_holder)
+
+	var icon_rect := TextureRect.new()
+	icon_rect.custom_minimum_size = Vector2(icon_max_size.x, icon_max_size.y)
+	icon_rect.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+	icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon_rect.texture = icon
+	icon_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	icon_holder.add_child(icon_rect)
+
+	if amount > 1:
+		var badge := PanelContainer.new()
+		badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		badge.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+		badge.offset_left = -34
+		badge.offset_top = 4
+		badge.offset_right = -4
+		badge.offset_bottom = 24
+		var badge_bg := StyleBoxFlat.new()
+		badge_bg.bg_color = Color(0.1, 0.1, 0.12, 0.95)
+		badge_bg.set_corner_radius_all(4)
+		badge.add_theme_stylebox_override("panel", badge_bg)
+		var badge_text := Label.new()
+		badge_text.text = "x%d" % amount
+		badge_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		badge_text.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		badge_text.add_theme_font_size_override("font_size", 12)
+		badge_text.add_theme_color_override("font_color", Color(1, 1, 1, 1))
+		badge.add_child(badge_text)
+		tile.add_child(badge)
+
+	_items_grid.add_child(tile)
+	_tile_by_item_id[item_id] = tile
+
+
+func _apply_tile_selection_visual(tile: Button, selected: bool) -> void:
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0.08, 0.09, 0.11, 0.9)
+	sb.set_corner_radius_all(6)
+	sb.content_margin_left = 6
+	sb.content_margin_top = 6
+	sb.content_margin_right = 6
+	sb.content_margin_bottom = 6
+	if selected:
+		sb.border_width_left = 2
+		sb.border_width_top = 2
+		sb.border_width_right = 2
+		sb.border_width_bottom = 2
+		sb.border_color = Color(0.35, 0.75, 1.0, 1.0)
+		sb.shadow_color = Color(0.2, 0.6, 1.0, 0.35)
+		sb.shadow_size = 4
+	else:
+		sb.border_width_left = 1
+		sb.border_width_top = 1
+		sb.border_width_right = 1
+		sb.border_width_bottom = 1
+		sb.border_color = Color(0.25, 0.27, 0.32, 0.8)
+		sb.shadow_size = 0
+	tile.add_theme_stylebox_override("normal", sb)
+	tile.add_theme_stylebox_override("hover", sb)
+	tile.add_theme_stylebox_override("pressed", sb)
+
+
+func _inspect_item(item_id: String) -> void:
+	_refresh_description(item_id)
+	var title := _display_name(item_id)
+	var body := ""
+	if _def_by_id.has(item_id):
+		var def: ATKInventoryItemDefinition = _def_by_id[item_id]
+		body = def.description.strip_edges()
+	if body.is_empty():
+		body = "No description."
+	var bus := get_node_or_null("/root/ATKInteractionFeedback")
+	if bus != null and bus.has_method("show_message"):
+		bus.call("show_message", body, title, item_id)
+
+
+func _refresh_selected_preview(item_id: String) -> void:
+	if _selected_preview == null or _selected_preview_icon == null:
+		return
+	if item_id.is_empty():
+		_selected_preview.visible = false
+		_selected_preview_icon.texture = null
+		_selected_preview.tooltip_text = ""
+		return
+	var inventory := get_node_or_null("/root/ATKInventory")
+	var icon := _resolve_item_icon(inventory, item_id)
+	_selected_preview_icon.texture = icon
+	_selected_preview.visible = icon != null
+	_selected_preview.tooltip_text = _display_name(item_id)

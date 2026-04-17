@@ -41,3 +41,26 @@
 
 - Target: Godot `4.6.2`
 - Designed to remain compatible with Godot `4.5.x+`
+
+## v0.5 Documentation and UX Sync
+
+### Documentation Updates
+
+- Refreshed all Markdown docs to match current runtime behavior.
+- Clarified naming: brand is `3DATK`, runtime code symbols remain `ATK`.
+- Updated creator manual with current demo workflow and validation checkpoints.
+
+### UX/System Updates Covered in Docs
+
+- Global cursor theme resource workflow (`ATKCursorTheme` + `default_cursor_theme.tres`).
+- Cursor intents/capability flags for interactables (`open`, `attack`, `climb`, `descend`).
+- Icon-first inventory workflow:
+  - item definition icon
+  - pickup icon override
+  - action-based icon override for non-scene item grants
+- Classic inventory tile behavior:
+  - fixed icon tile sizing
+  - quantity badges
+  - right-click inspect
+  - selected-item preview icon
+  - auto-close on selection

@@ -9,10 +9,14 @@ extends ATKAdventureObject
 @export var consume_on_pickup := true
 @export var show_pickup_feedback := true
 @export_multiline var pickup_feedback_template := "You collected {name} in your inventory."
+## Optional override icon used in inventory UI for this pickup's item_id.
+## If empty, [member ATKAdventureObject.ui_icon] is used if assigned.
+@export var inventory_icon_override: Texture2D
 
 
 func _ready() -> void:
 	super._ready()
+	_register_inventory_icon_override()
 	_apply_collected_state()
 	_apply_unique_world_availability()
 
@@ -94,6 +98,18 @@ func _apply_unique_world_availability() -> void:
 
 func _get_inventory_manager() -> Node:
 	return get_node_or_null("/root/ATKInventory")
+
+
+func _register_inventory_icon_override() -> void:
+	if item_id.is_empty():
+		return
+	var inventory := _get_inventory_manager()
+	if inventory == null or not inventory.has_method("register_runtime_item_icon"):
+		return
+	var icon := inventory_icon_override if inventory_icon_override != null else ui_icon
+	if icon == null:
+		return
+	inventory.call("register_runtime_item_icon", item_id, icon)
 
 
 func _collect_inventory_item_ids() -> PackedStringArray:

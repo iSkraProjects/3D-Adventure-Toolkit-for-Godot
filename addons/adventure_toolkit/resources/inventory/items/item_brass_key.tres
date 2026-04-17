@@ -1,12 +1,13 @@
-[gd_resource type="Resource" script_class="ATKInventoryItemDefinition" load_steps=2 format=3 uid="uid://atkitemdefbrasskey"]
+[gd_resource type="Resource" script_class="ATKInventoryItemDefinition" format=3 uid="uid://b3nrflp0h4rjk"]
 
-[ext_resource type="Script" path="res://addons/adventure_toolkit/resources/inventory/atk_inventory_item_definition.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://j3q4rgg2xnw0" path="res://addons/adventure_toolkit/resources/inventory/atk_inventory_item_definition.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://7550k7q3dp4e" path="res://inventory_items/brass_key.webp" id="1_wiuat"]
 
 [resource]
 script = ExtResource("1_script")
 item_id = "item_brass_key"
 display_name = "Brass key"
 description = "A small brass key. There is only one like it in this adventure."
+icon = ExtResource("1_wiuat")
 category = "key"
-stackable = false
 unique = true

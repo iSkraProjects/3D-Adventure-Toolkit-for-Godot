@@ -2,8 +2,8 @@
 
 ## Purpose
 
-This document defines the initial directory, naming, and ID conventions for the
-Godot 3D Adventure Toolkit (3DATK). All new Phase 0+ work should follow these rules
+This document defines the initial directory, naming, and ID conventions for
+3DATK for Godot. All new Phase 0+ work should follow these rules
 unless a later approved architecture update replaces them.
 
 ## Directory Responsibilities
@@ -17,7 +17,7 @@ unless a later approved architecture update replaces them.
 - `addons/adventure_toolkit/resources`
   - reusable authored resource scripts and resource assets
 - `addons/adventure_toolkit/ui`
-  - runtime UI and debug UI scenes/scripts
+  - runtime UI scenes/scripts
 - `addons/adventure_toolkit/templates`
   - reusable starter scenes and object templates
 - `addons/adventure_toolkit/demo`
@@ -56,7 +56,7 @@ unless a later approved architecture update replaces them.
 - `runtime/cutscenes`
   - cutscene integration hooks and sequence support
 
-## Naming Conventions
+## Naming and Branding Conventions
 
 - GDScript filenames use `snake_case.gd`
 - Godot scenes use `PascalCase.tscn` for reusable toolkit nodes and templates
@@ -64,7 +64,9 @@ unless a later approved architecture update replaces them.
 - Documentation files use `snake_case.md`
 - Code symbols use `PascalCase` for classes and `snake_case` for methods,
   variables, signals, and properties
-- Public toolkit class names use the `ATK` prefix
+- Public runtime/toolkit class names use the `ATK` prefix
+- Brand/documentation name is `3DATK`
+- Do not rename code symbols from `ATK` to `3DATK` unless there is a deliberate migration task
 
 ## Initial Script Placement Rules
 
@@ -99,3 +101,10 @@ unless a later approved architecture update replaces them.
 - object IDs must be unique within authored content
 - new systems should reuse these conventions instead of creating local naming
   schemes
+
+## Cursor and Inventory Authoring Conventions
+
+- Cursor visuals should be configured through `ATKCursorTheme` resources, not hardcoded paths in gameplay scripts.
+- Default global theme should remain in `resources/cursors/default_cursor_theme.tres`.
+- Interactable cursor behavior should prefer exported intent/capability flags over custom script branches.
+- Inventory visuals should be icon-first; item text is secondary (tooltip/description panel), not primary tile content.

@@ -4,123 +4,91 @@
 
 ## Why This Addon Exists
 
-Most adventure game creators are storytellers, designers, artists, or solo makers. Many of them are blocked by code-heavy pipelines, where every small interaction needs a new script.
+3DATK exists to let creators build story-driven 3D point-and-click adventures without constantly writing custom scripts.
 
-3DATK exists to remove that friction.
+The project is built for designers first:
 
-The addon is built so you can create story-driven 3D point-and-click adventures in Godot with:
-
-- inspector-driven setup
+- inspector-first setup
 - reusable templates
-- state + save/load systems that work by default
-- shared interaction rules instead of one-off logic
+- state-driven progression
+- save/load-safe interactions
+- shared systems over one-off logic
 
-The goal is simple: make adventure game creation accessible to people with little or minimal coding skills, while still being robust enough for technical teams.
+## Naming Clarification
 
-## What 3DATK Is
-
-3DATK (3D Adventure Toolkit) is a modular Godot addon for building 3D adventure games.
-
-It provides:
-
-- scene and spawn management
-- click-to-move and click-to-interact
-- right-click inspect flow
-- inventory
-- doors, pickups, NPCs, triggers, exits
-- conditions + action sequences (data-driven logic)
-- dialogue, quests, journal, hints
-- settings/options menu
-- save/load persistence
-- episode progression baseline
-
-## Core Philosophy
-
-3DATK follows 3 principles:
-
-- **Designer-first**: Build in the inspector and resources first.
-- **State-driven**: Game progression is represented as persistent state.
-- **No-code by default**: Prefer templates, actions, and conditions before custom scripts.
-
-If you can express behavior with 3DATK exports/resources, that is the preferred path.
-
-## Technical Architecture
-
-3DATK uses:
-
-- **Autoload singletons** for global runtime services (`3DATKScenes`, `3DATKState`, `3DATKSave`, etc.)
-- **Resource assets** for reusable logic (`3DATKActionStep*`, `3DATKCondition*`, dialogue definitions, episode definitions)
-- **Runtime node classes** for world objects (`3DATKAdventureObject`, `3DATKDoor`, `3DATKPickup`, `3DATKNPC`, `3DATKTrigger`, `3DATKExit`)
-- **UI scenes/scripts** for inventory, save/load, dialogue, hints, journal, pause/options
-
-This makes content authoring data-oriented and predictable across scenes.
-
-## Feature Overview
-
-### Scene and Navigation
-
-- `3DATKSceneRoot` identifies scenes with stable `scene_id`.
-- `3DATKSpawnPoint` supports deterministic entry points.
-- `3DATKScenes` handles scene registration and transitions.
-- `3DATKPlayerController` provides movement and interaction requests.
-
-### Interaction Model
-
-- Left mouse: primary interaction.
-- Right mouse: inspect interaction.
-- Objects resolve interaction through shared rule pipeline first, then fallback/default behavior.
-
-### World Object Types
-
-- `3DATKInspectable`: inspect-first objects.
-- `3DATKPickup`: world item -> inventory.
-- `3DATKDoor`: lock/unlock/open and optional scene transition.
-- `3DATKNPC`: dialogue and optional no-code item handover flow.
-- `3DATKTrigger`: area trigger with conditions + enter/exit actions.
-- `3DATKExit`: no-code scene exit object.
-
-### Data-Driven Logic
-
-Conditions and action sequences let you create puzzle and story flow without writing custom behavior code.
+Brand name: **3DATK**  
+Runtime code prefix: **ATK** (for classes, resources, autoloads, and menu paths)
 
 Examples:
 
-- If player has item -> unlock door
-- If quest stage reached -> show new dialogue
-- If object state changed -> run cinematic/action sequence
+- `ATKScenes`, `ATKState`, `ATKInventory`
+- `ATKAdventureObject`, `ATKDoor`, `ATKPickup`, `ATKNPC`
+- editor menu path: `ATK/...`
 
-### Save/Load and Persistence
+## Core Capabilities
 
-3DATK persistently stores:
+- scene and spawn management (`ATKSceneRoot`, `ATKSpawnPoint`, `ATKScenes`)
+- click-to-move, click-to-interact, right-click inspect
+- interaction rules with conditions and action sequences
+- doors, pickups, NPC handovers, triggers, exits
+- dialogue, quests, journal, hints
+- options/settings (video, audio, controls)
+- save/load persistence for story state
+- cursor theme system with global drag/drop icons
+- inventory with icon-based tiles and selected-item HUD preview
 
-- scene/spawn
-- global/scene/object/session state
-- inventory/selection
-- quests/journal/hints
-- settings
-- active episode metadata
+## New UX Systems (Current)
 
-### Settings and UX
+### Cursor Theme (Global Asset)
 
-Options include:
+Cursor behavior is now theme-driven with a dedicated resource:
 
-- resolution
-- master/music/sfx/ambience/voice volumes
-- keyboard shortcuts enable/disable
-- key rebinding
+- `addons/adventure_toolkit/resources/cursors/atk_cursor_theme.gd`
+- `addons/adventure_toolkit/resources/cursors/default_cursor_theme.tres`
 
-### Editor Tooling
+Supported cursor slots:
 
-Plugin menu actions help with:
+- `cursor_normal`
+- `cursor_interact`
+- `cursor_inspect`
+- `cursor_open`
+- `cursor_attack`
+- `cursor_climb`
+- `cursor_descend`
 
-- assigning stable IDs
-- creating interaction points
-- validation
-- direct template instantiation into scenes
+Hover behavior can be controlled per object through:
 
-## Templates (Ready to Use)
+- `hover_cursor_intent`
+- `is_openable`, `is_attackable`, `is_climbable`, `is_descendable`
 
-In `addons/adventure_toolkit/templates/objects/`:
+### Inventory Icons and Classic Tile Grid
+
+Inventory is icon-first now:
+
+- fixed-size icon tiles
+- oversized images constrained by max icon bounds
+- quantity badge overlay (`xN`) only when amount > 1
+- right-click inspect on inventory items
+- selected item icon preview at lower-right HUD
+- inventory auto-closes after item selection
+
+Item icon sources (priority):
+
+1. pickup `inventory_icon_override`
+2. pickup/object `ui_icon`
+3. item definition `icon` (`ATKInventoryItemDefinition`)
+4. none
+
+For non-scene items (e.g. dialogue-granted key), icon can come from:
+
+- item definition `icon`
+- `ATKActionStepAddItem.icon_override`
+
+## Templates
+
+Use ready templates in:
+
+`addons/adventure_toolkit/templates/objects/`
 
 - `Template_Door_Locked.tscn`
 - `Template_Door_Exit.tscn`
@@ -132,114 +100,35 @@ In `addons/adventure_toolkit/templates/objects/`:
 - `Template_Exit.tscn`
 - `Template_Puzzle_Simple.tscn`
 
-These are designed as copy/duplicate starting points for non-coder workflows.
+Editor actions are available under `ATK/`.
 
-## Full Usage Manual (General + Technical)
+## Recommended Build Flow
 
-## 1) Installation
+1. Create scene with `ATKSceneRoot` + `ATKSpawnPoint`
+2. Place templates and assign stable IDs
+3. Author conditions/actions/dialogue resources
+4. Configure cursor theme and item icons
+5. Validate save/load through progression checkpoints
 
-1. Open project in Godot 4.6.2 (or 4.5.x+).
-2. Enable plugin: `Project Settings -> Plugins -> Adventure Toolkit`.
-3. Verify 3DATK autoloads exist and plugin is active.
+## Validation Checklist
 
-## 2) Create a Scene
+- stable IDs on all save-critical content
+- inspect text for key interactables
+- cursor theme assigned and visible on hover
+- inventory icons visible for scene and non-scene items
+- save/load restores progression and selection state
+- no runtime errors during scene transitions
 
-1. Add `3DATKSceneRoot` as root.
-2. Set `scene_id` (stable, unique).
-3. Add at least one `3DATKSpawnPoint` with `spawn_id`.
-4. Add player controller and navigation.
+## When to Script
 
-## 3) Build Interactions Without Code
+Prefer data first. Write custom code only when behavior cannot be expressed by:
 
-1. Place template objects using `3DATK/Create Template/*` menu.
-2. Fill inspector fields (`object_id`, names, inspect text, requirements).
-3. Author action sequences and condition resources.
-4. Bind object rules to actions/conditions.
+- ATK node exports
+- ATK conditions
+- ATK action steps
+- ATK templates
 
-## 4) Build Puzzle Flow
+## Documentation
 
-1. Create item definitions (key, quest items, etc.).
-2. Use pickup templates for acquisition.
-3. Use door/NPC/trigger conditions to gate progression.
-4. Use action steps to set world state and provide feedback.
-
-## 5) Dialogue and Quest Flow
-
-1. Create dialogue resources.
-2. Assign dialogue to `3DATKNPC`.
-3. Trigger quest/journal updates via action steps.
-4. Use quest/stage conditions to branch outcomes.
-
-## 6) Configure UX and Accessibility
-
-1. Use options menu for video/audio/input preferences.
-2. Ensure keyboard shortcuts and keybindings are set for intended audience.
-3. Validate subtitle scale/text speed behavior with UI.
-
-## 7) Save/Load Validation
-
-Run a basic persistence test:
-
-1. Start new game.
-2. Complete a meaningful interaction chain.
-3. Save in slot.
-4. Load and verify all object states and inventory.
-5. Restart game and load again.
-
-## 8) Recommended Quality Gates
-
-- Every interactable has stable ID.
-- Every critical object has inspect text.
-- No scene/object ID collisions.
-- At least one happy-path full playthrough.
-- Save/load pass across restart.
-
-## 9) When to Write Custom Code
-
-Write custom scripts only when behavior is truly unique and not expressible through:
-
-- existing 3DATK node exports
-- condition resources
-- action resources
-- template composition
-
-When coding, prefer extending 3DATK classes over replacing systems.
-
-## 10) Common Pitfalls
-
-- Missing IDs -> broken persistence mapping.
-- Interaction point misplacement -> awkward approach behavior.
-- Scene root not 3DATK-enabled -> missing 3DATK scene hooks.
-- Ad hoc one-off scripts -> hard-to-maintain content logic.
-
-## For Non-Technical Users
-
-You can build full adventure progression with:
-
-- drag-and-drop templates
-- inspector setup
-- conditions and actions
-- dialogue/quest resources
-
-You do not need advanced programming to ship a complete story flow.
-
-## For Technical Users
-
-3DATK is intentionally extensible:
-
-- Add new `3DATKActionStep` and `3DATKCondition` resources.
-- Extend runtime nodes conservatively.
-- Keep save schema compatibility and stable IDs.
-- Reuse shared pipeline for consistency.
-
-## Project Intent Summary
-
-3DATK is not just a toolkit of scripts. It is a production philosophy:
-
-- predictable systems over ad hoc behavior
-- authored data over duplicated code
-- story and design velocity for humans first
-
-If someone asks, “Can I build an adventure game with this without becoming a programmer?”
-
-The intended answer is: **Yes.**
+- `addons/adventure_toolkit/docs/ATK Manual.md` (private creator build guide)
+- `addons/adventure_toolkit/docs/foundation_conventions.md` (architecture and naming rules)

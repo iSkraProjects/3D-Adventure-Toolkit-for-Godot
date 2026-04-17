@@ -100,18 +100,24 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _physics_process(_delta: float) -> void:
+	# Scene transitions can invoke one more physics tick while this node (or its physics body)
+	# is being detached. Guard hard to avoid null-space and not-inside-tree engine errors.
+	if not is_inside_tree() or get_world_3d() == null:
+		return
+	if navigation_agent == null or not navigation_agent.is_inside_tree():
+		return
+
 	if _is_world_interaction_locked():
 		_clear_active_movement()
-		move_and_slide()
+		_safe_move_and_slide()
 		return
 	if not _has_active_destination:
 		velocity = Vector3.ZERO
-		move_and_slide()
+		_safe_move_and_slide()
 		return
 
 	if _is_destination_reached():
 		_finish_destination()
-		move_and_slide()
 		return
 
 	var next_path_position := navigation_agent.get_next_path_position()
@@ -121,7 +127,7 @@ func _physics_process(_delta: float) -> void:
 	if velocity.length_squared() > 0.001:
 		look_at(global_position + Vector3(velocity.x, 0.0, velocity.z), Vector3.UP)
 
-	move_and_slide()
+	_safe_move_and_slide()
 
 
 func request_destination(target_position: Vector3) -> void:
@@ -235,3 +241,11 @@ func _get_clicked_adventure_object(mouse_position: Vector2) -> ATKAdventureObjec
 
 func get_requested_interaction_verb() -> String:
 	return _active_interaction_verb
+
+
+func _safe_move_and_slide() -> void:
+	if not is_inside_tree() or is_queued_for_deletion():
+		return
+	if get_world_3d() == null:
+		return
+	move_and_slide()

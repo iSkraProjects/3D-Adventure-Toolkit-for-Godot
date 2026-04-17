@@ -4,10 +4,22 @@ extends Node3D
 
 signal object_runtime_state_changed(object_id: String, key: String, value: Variant, old_value: Variant)
 
+enum HoverCursorIntent {
+	AUTO,
+	INTERACT,
+	INSPECT,
+	OPEN,
+	ATTACK,
+	CLIMB,
+	DESCEND
+}
+
 
 @export var object_id := ""
 @export var display_name := ""
 @export_multiline var inspect_text := ""
+## Optional UI icon for this object. Pickups can use this as inventory icon override.
+@export var ui_icon: Texture2D
 @export var interaction_point_path: NodePath
 @export var is_enabled := true
 @export var is_visible_in_world := true
@@ -21,6 +33,13 @@ signal object_runtime_state_changed(object_id: String, key: String, value: Varia
 @export_multiline var hover_tooltip_secondary := ""
 ## Local offset from the object origin for projecting the hover anchor (see [method get_hover_tooltip_world_position]).
 @export var hover_tooltip_offset := Vector3(0, 1.25, 0)
+## Cursor intent shown by [ATKInteractionHover] while hovering this object.
+@export var hover_cursor_intent := HoverCursorIntent.AUTO
+## Optional usability flags for designers. AUTO mode maps to these flags.
+@export var is_openable := false
+@export var is_attackable := false
+@export var is_climbable := false
+@export var is_descendable := false
 
 
 func _ready() -> void:
@@ -98,6 +117,24 @@ func get_hover_tooltip_secondary() -> String:
 
 func get_hover_tooltip_world_position() -> Vector3:
 	return to_global(hover_tooltip_offset)
+
+
+func get_hover_cursor_kind() -> String:
+	match hover_cursor_intent:
+		HoverCursorIntent.INTERACT:
+			return "interact"
+		HoverCursorIntent.INSPECT:
+			return "inspect"
+		HoverCursorIntent.OPEN:
+			return "open"
+		HoverCursorIntent.ATTACK:
+			return "attack"
+		HoverCursorIntent.CLIMB:
+			return "climb"
+		HoverCursorIntent.DESCEND:
+			return "descend"
+		_:
+			return _resolve_auto_hover_cursor_kind()
 
 
 func get_default_interaction_text() -> String:
@@ -214,7 +251,12 @@ func _emit_runtime_state_changed(key: String, value: Variant, old_value: Variant
 
 
 func _get_state_manager() -> Node:
-	return get_node_or_null("/root/ATKState")
+	if not is_inside_tree():
+		return null
+	var tree := get_tree()
+	if tree == null:
+		return null
+	return tree.root.get_node_or_null("ATKState")
 
 
 func _run_legacy_inspect(_actor: Node) -> void:
@@ -322,3 +364,15 @@ func _rule_headers_match(rule: ATKInteractionRule, active_verb: String, eval_ctx
 
 func _rule_has_actions(rule: ATKInteractionRule) -> bool:
 	return rule != null and rule.actions != null and not rule.actions.steps.is_empty()
+
+
+func _resolve_auto_hover_cursor_kind() -> String:
+	if is_climbable:
+		return "climb"
+	if is_descendable:
+		return "descend"
+	if is_openable:
+		return "open"
+	if is_attackable:
+		return "attack"
+	return "interact"
