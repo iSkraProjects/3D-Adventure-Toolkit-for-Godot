@@ -4,7 +4,7 @@
 
 Most adventure game creators are storytellers, designers, artists, or solo makers. Many of them are blocked by code-heavy pipelines, where every small interaction needs a new script.
 
-ATK exists to remove that friction.
+3DATK exists to remove that friction.
 
 The addon is built so you can create story-driven 3D point-and-click adventures in Godot with:
 
@@ -15,9 +15,9 @@ The addon is built so you can create story-driven 3D point-and-click adventures 
 
 The goal is simple: make adventure game creation accessible to people with little or minimal coding skills, while still being robust enough for technical teams.
 
-## What ATK Is
+## What 3DATK Is
 
-ATK (Adventure Toolkit) is a modular Godot addon for building 3D adventure games.
+3DATK (Adventure Toolkit) is a modular Godot addon for building 3D adventure games.
 
 It provides:
 
@@ -34,21 +34,21 @@ It provides:
 
 ## Core Philosophy
 
-ATK follows 3 principles:
+3DATK follows 3 principles:
 
 - **Designer-first**: Build in the inspector and resources first.
 - **State-driven**: Game progression is represented as persistent state.
 - **No-code by default**: Prefer templates, actions, and conditions before custom scripts.
 
-If you can express behavior with ATK exports/resources, that is the preferred path.
+If you can express behavior with 3DATK exports/resources, that is the preferred path.
 
 ## Technical Architecture
 
-ATK uses:
+3DATK uses:
 
-- **Autoload singletons** for global runtime services (`ATKScenes`, `ATKState`, `ATKSave`, etc.)
-- **Resource assets** for reusable logic (`ATKActionStep*`, `ATKCondition*`, dialogue definitions, episode definitions)
-- **Runtime node classes** for world objects (`ATKAdventureObject`, `ATKDoor`, `ATKPickup`, `ATKNPC`, `ATKTrigger`, `ATKExit`)
+- **Autoload singletons** for global runtime services (`3DATKScenes`, `3DATKState`, `3DATKSave`, etc.)
+- **Resource assets** for reusable logic (`3DATKActionStep*`, `3DATKCondition*`, dialogue definitions, episode definitions)
+- **Runtime node classes** for world objects (`3DATKAdventureObject`, `3DATKDoor`, `3DATKPickup`, `3DATKNPC`, `3DATKTrigger`, `3DATKExit`)
 - **UI scenes/scripts** for inventory, save/load, dialogue, hints, journal, pause/options
 
 This makes content authoring data-oriented and predictable across scenes.
@@ -57,10 +57,10 @@ This makes content authoring data-oriented and predictable across scenes.
 
 ### Scene and Navigation
 
-- `ATKSceneRoot` identifies scenes with stable `scene_id`.
-- `ATKSpawnPoint` supports deterministic entry points.
-- `ATKScenes` handles scene registration and transitions.
-- `ATKPlayerController` provides movement and interaction requests.
+- `3DATKSceneRoot` identifies scenes with stable `scene_id`.
+- `3DATKSpawnPoint` supports deterministic entry points.
+- `3DATKScenes` handles scene registration and transitions.
+- `3DATKPlayerController` provides movement and interaction requests.
 
 ### Interaction Model
 
@@ -70,12 +70,12 @@ This makes content authoring data-oriented and predictable across scenes.
 
 ### World Object Types
 
-- `ATKInspectable`: inspect-first objects.
-- `ATKPickup`: world item -> inventory.
-- `ATKDoor`: lock/unlock/open and optional scene transition.
-- `ATKNPC`: dialogue and optional no-code item handover flow.
-- `ATKTrigger`: area trigger with conditions + enter/exit actions.
-- `ATKExit`: no-code scene exit object.
+- `3DATKInspectable`: inspect-first objects.
+- `3DATKPickup`: world item -> inventory.
+- `3DATKDoor`: lock/unlock/open and optional scene transition.
+- `3DATKNPC`: dialogue and optional no-code item handover flow.
+- `3DATKTrigger`: area trigger with conditions + enter/exit actions.
+- `3DATKExit`: no-code scene exit object.
 
 ### Data-Driven Logic
 
@@ -89,7 +89,7 @@ Examples:
 
 ### Save/Load and Persistence
 
-ATK persistently stores:
+3DATK persistently stores:
 
 - scene/spawn
 - global/scene/object/session state
@@ -138,18 +138,18 @@ These are designed as copy/duplicate starting points for non-coder workflows.
 
 1. Open project in Godot 4.6.2 (or 4.5.x+).
 2. Enable plugin: `Project Settings -> Plugins -> Adventure Toolkit`.
-3. Verify ATK autoloads exist and plugin is active.
+3. Verify 3DATK autoloads exist and plugin is active.
 
 ## 2) Create a Scene
 
-1. Add `ATKSceneRoot` as root.
+1. Add `3DATKSceneRoot` as root.
 2. Set `scene_id` (stable, unique).
-3. Add at least one `ATKSpawnPoint` with `spawn_id`.
+3. Add at least one `3DATKSpawnPoint` with `spawn_id`.
 4. Add player controller and navigation.
 
 ## 3) Build Interactions Without Code
 
-1. Place template objects using `ATK/Create Template/*` menu.
+1. Place template objects using `3DATK/Create Template/*` menu.
 2. Fill inspector fields (`object_id`, names, inspect text, requirements).
 3. Author action sequences and condition resources.
 4. Bind object rules to actions/conditions.
@@ -164,7 +164,7 @@ These are designed as copy/duplicate starting points for non-coder workflows.
 ## 5) Dialogue and Quest Flow
 
 1. Create dialogue resources.
-2. Assign dialogue to `ATKNPC`.
+2. Assign dialogue to `3DATKNPC`.
 3. Trigger quest/journal updates via action steps.
 4. Use quest/stage conditions to branch outcomes.
 
@@ -196,18 +196,18 @@ Run a basic persistence test:
 
 Write custom scripts only when behavior is truly unique and not expressible through:
 
-- existing ATK node exports
+- existing 3DATK node exports
 - condition resources
 - action resources
 - template composition
 
-When coding, prefer extending ATK classes over replacing systems.
+When coding, prefer extending 3DATK classes over replacing systems.
 
 ## 10) Common Pitfalls
 
 - Missing IDs -> broken persistence mapping.
 - Interaction point misplacement -> awkward approach behavior.
-- Scene root not ATK-enabled -> missing ATK scene hooks.
+- Scene root not 3DATK-enabled -> missing 3DATK scene hooks.
 - Ad hoc one-off scripts -> hard-to-maintain content logic.
 
 ## For Non-Technical Users
@@ -223,16 +223,16 @@ You do not need advanced programming to ship a complete story flow.
 
 ## For Technical Users
 
-ATK is intentionally extensible:
+3DATK is intentionally extensible:
 
-- Add new `ATKActionStep` and `ATKCondition` resources.
+- Add new `3DATKActionStep` and `3DATKCondition` resources.
 - Extend runtime nodes conservatively.
 - Keep save schema compatibility and stable IDs.
 - Reuse shared pipeline for consistency.
 
 ## Project Intent Summary
 
-ATK is not just a toolkit of scripts. It is a production philosophy:
+3DATK is not just a toolkit of scripts. It is a production philosophy:
 
 - predictable systems over ad hoc behavior
 - authored data over duplicated code
