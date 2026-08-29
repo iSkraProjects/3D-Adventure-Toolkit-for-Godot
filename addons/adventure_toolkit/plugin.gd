@@ -392,10 +392,10 @@ func _create_template_camera_director() -> void:
 
 
 func _create_template_camera_zone() -> void:
-	_instantiate_template_into_scene(TEMPLATE_CAMERA_ZONE_PATH)
+	_instantiate_template_into_scene(TEMPLATE_CAMERA_ZONE_PATH, true)
 
 
-func _instantiate_template_into_scene(template_path: String) -> void:
+func _instantiate_template_into_scene(template_path: String, place_at_world_origin: bool = false) -> void:
 	var tree := get_tree()
 	if tree == null:
 		return
@@ -412,11 +412,14 @@ func _instantiate_template_into_scene(template_path: String) -> void:
 		push_error("Adventure Toolkit: could not instantiate template '%s'." % template_path)
 		return
 
-	var parent := _resolve_template_parent(root)
+	var parent := root if place_at_world_origin else _resolve_template_parent(root)
 	parent.add_child(instance)
 	instance.owner = root
-	if instance is Node3D and parent is Node3D:
-		(instance as Node3D).global_transform = (parent as Node3D).global_transform
+	if instance is Node3D:
+		if place_at_world_origin:
+			(instance as Node3D).global_transform = Transform3D.IDENTITY
+		elif parent is Node3D:
+			(instance as Node3D).global_transform = (parent as Node3D).global_transform
 	_assign_missing_id_recursive(instance, root)
 	get_editor_interface().get_selection().clear()
 	get_editor_interface().get_selection().add_node(instance)
