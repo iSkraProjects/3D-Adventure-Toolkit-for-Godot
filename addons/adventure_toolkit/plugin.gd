@@ -60,7 +60,7 @@ const TEMPLATE_PUZZLE_SIMPLE_PATH := "res://addons/adventure_toolkit/templates/o
 const TEMPLATE_SCENE_CAMERA_PATH := "res://addons/adventure_toolkit/templates/objects/Template_Scene_Camera.tscn"
 const TEMPLATE_CAMERA_DIRECTOR_PATH := "res://addons/adventure_toolkit/templates/objects/Template_Camera_Director.tscn"
 const TEMPLATE_CAMERA_ZONE_PATH := "res://addons/adventure_toolkit/templates/objects/Template_Camera_Zone.tscn"
-const SCENE_CAMERA_GIZMO_PLUGIN := preload("res://addons/adventure_toolkit/editor/atk_scene_camera_gizmo_plugin.gd")
+const SCENE_CAMERA_GIZMO_PLUGIN_PATH := "res://addons/adventure_toolkit/editor/atk_scene_camera_gizmo_plugin.gd"
 
 var _scene_camera_gizmo_plugin: EditorNode3DGizmoPlugin
 
@@ -97,8 +97,11 @@ func _enter_tree() -> void:
 	add_tool_menu_item(MENU_CREATE_TEMPLATE_SCENE_CAMERA, _create_template_scene_camera)
 	add_tool_menu_item(MENU_CREATE_TEMPLATE_CAMERA_DIRECTOR, _create_template_camera_director)
 	add_tool_menu_item(MENU_CREATE_TEMPLATE_CAMERA_ZONE, _create_template_camera_zone)
-	_scene_camera_gizmo_plugin = SCENE_CAMERA_GIZMO_PLUGIN.new()
-	add_node_3d_gizmo_plugin(_scene_camera_gizmo_plugin)
+	var gizmo_script := load(SCENE_CAMERA_GIZMO_PLUGIN_PATH) as GDScript
+	if gizmo_script != null:
+		_scene_camera_gizmo_plugin = gizmo_script.new() as EditorNode3DGizmoPlugin
+		if _scene_camera_gizmo_plugin != null:
+			add_node_3d_gizmo_plugin(_scene_camera_gizmo_plugin)
 
 
 func _exit_tree() -> void:

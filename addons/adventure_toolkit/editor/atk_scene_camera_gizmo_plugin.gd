@@ -2,7 +2,7 @@
 extends EditorNode3DGizmoPlugin
 
 ## Viewport handles for ATKSceneCamera follow rails, limits, and deadzone.
-## Draws through Godot's editor gizmo system — no scene-tree children, safe to save.
+## Draws through Godot's editor gizmo system. No scene-tree children, so saving stays safe.
 
 const _CAMERA_SCRIPT := preload("res://addons/adventure_toolkit/runtime/camera/atk_scene_camera.gd")
 
@@ -49,20 +49,27 @@ func _has_gizmo(node: Node3D) -> bool:
 	return node.get_script() == _CAMERA_SCRIPT
 
 
+func _camera(gizmo: EditorNode3DGizmo):
+	var node = gizmo.get_node_3d()
+	if node == null or node.get_script() != _CAMERA_SCRIPT:
+		return null
+	return node
+
+
 func _redraw(gizmo: EditorNode3DGizmo) -> void:
 	gizmo.clear()
-	var cam := gizmo.get_node_3d()
+	var cam = _camera(gizmo)
 	if cam == null or not cam.show_follow_gizmos:
 		return
 	if cam.behavior != cam.CameraBehavior.FOLLOW_PLAYER:
 		return
 	var layout: Dictionary = cam.get_follow_gizmo_layout()
-	var look: Vector3 = layout.look
-	var y: float = layout.floor_y
-	var x0: float = layout.x0
-	var x1: float = layout.x1
-	var z0: float = layout.z0
-	var z1: float = layout.z1
+	var look: Vector3 = layout["look"]
+	var y: float = layout["floor_y"]
+	var x0: float = layout["x0"]
+	var x1: float = layout["x1"]
+	var z0: float = layout["z0"]
+	var z1: float = layout["z1"]
 
 	var rail := PackedVector3Array()
 	if cam.follow_x:
@@ -85,10 +92,10 @@ func _redraw(gizmo: EditorNode3DGizmo) -> void:
 		gizmo.add_lines(limit_lines, get_material("limit" if cam.use_follow_limits else "rail", gizmo))
 
 	if cam.follow_deadzone_enabled:
-		var p0 := Vector3(layout.dz_min_x, y, layout.dz_min_z)
-		var p1 := Vector3(layout.dz_max_x, y, layout.dz_min_z)
-		var p2 := Vector3(layout.dz_max_x, y, layout.dz_max_z)
-		var p3 := Vector3(layout.dz_min_x, y, layout.dz_max_z)
+		var p0 := Vector3(layout["dz_min_x"], y, layout["dz_min_z"])
+		var p1 := Vector3(layout["dz_max_x"], y, layout["dz_min_z"])
+		var p2 := Vector3(layout["dz_max_x"], y, layout["dz_max_z"])
+		var p3 := Vector3(layout["dz_min_x"], y, layout["dz_max_z"])
 		var outline := PackedVector3Array()
 		_append_line(cam, outline, p0, p1)
 		_append_line(cam, outline, p1, p2)
@@ -117,11 +124,11 @@ func _redraw(gizmo: EditorNode3DGizmo) -> void:
 	if cam.follow_deadzone_enabled:
 		var dead_pts := PackedVector3Array()
 		var dead_ids := PackedInt32Array()
-		var mid_z := (layout.dz_min_z + layout.dz_max_z) * 0.5
-		var mid_x := (layout.dz_min_x + layout.dz_max_x) * 0.5
+		var mid_z := (float(layout["dz_min_z"]) + float(layout["dz_max_z"])) * 0.5
+		var mid_x := (float(layout["dz_min_x"]) + float(layout["dz_max_x"])) * 0.5
 		if cam.follow_x:
-			var left_x: float = layout.dz_min_x
-			var right_x: float = layout.dz_max_x
+			var left_x: float = layout["dz_min_x"]
+			var right_x: float = layout["dz_max_x"]
 			if right_x - left_x < 0.4:
 				left_x = look.x - 0.35
 				right_x = look.x + 0.35
@@ -130,8 +137,8 @@ func _redraw(gizmo: EditorNode3DGizmo) -> void:
 			dead_pts.append(cam.to_local(Vector3(right_x, y + 0.55, mid_z)))
 			dead_ids.append(HANDLE_DEAD_POS_X)
 		if cam.follow_z:
-			var back_z: float = layout.dz_min_z
-			var fwd_z: float = layout.dz_max_z
+			var back_z: float = layout["dz_min_z"]
+			var fwd_z: float = layout["dz_max_z"]
 			if fwd_z - back_z < 0.4:
 				back_z = look.z - 0.35
 				fwd_z = look.z + 0.35
@@ -166,11 +173,11 @@ func _get_handle_name(_gizmo: EditorNode3DGizmo, handle_id: int, _secondary: boo
 
 
 func _get_handle_value(gizmo: EditorNode3DGizmo, _handle_id: int, _secondary: bool) -> Variant:
-	return _snapshot(gizmo.get_node_3d())
+	return _snapshot(_camera(gizmo))
 
 
 func _set_handle(gizmo: EditorNode3DGizmo, handle_id: int, _secondary: bool, camera: Camera3D, screen_pos: Vector2) -> void:
-	var cam := gizmo.get_node_3d()
+	var cam = _camera(gizmo)
 	if cam == null:
 		return
 	var hit := _intersect_floor(camera, screen_pos, cam.gizmo_floor_y)
@@ -186,7 +193,7 @@ func _set_handle(gizmo: EditorNode3DGizmo, handle_id: int, _secondary: bool, cam
 
 
 func _commit_handle(gizmo: EditorNode3DGizmo, _handle_id: int, _secondary: bool, restore: Variant, cancel: bool) -> void:
-	var cam := gizmo.get_node_3d()
+	var cam = _camera(gizmo)
 	if cam == null or typeof(restore) != TYPE_DICTIONARY:
 		return
 	if cancel:
@@ -199,15 +206,17 @@ func _commit_handle(gizmo: EditorNode3DGizmo, _handle_id: int, _secondary: bool,
 	ur.commit_action(false)
 
 
-func _apply_limit_handle(cam: Node, handle_id: int, world: Vector3) -> void:
+func _apply_limit_handle(cam, handle_id: int, world: Vector3) -> void:
+	if cam == null:
+		return
 	var layout: Dictionary = cam.get_follow_gizmo_layout()
 	if not cam.use_follow_limits:
 		var seeded_min: Vector3 = cam.follow_limit_min
 		var seeded_max: Vector3 = cam.follow_limit_max
-		seeded_min.x = layout.x0
-		seeded_max.x = layout.x1
-		seeded_min.z = layout.z0
-		seeded_max.z = layout.z1
+		seeded_min.x = layout["x0"]
+		seeded_max.x = layout["x1"]
+		seeded_min.z = layout["z0"]
+		seeded_max.z = layout["z1"]
 		cam.follow_limit_min = seeded_min
 		cam.follow_limit_max = seeded_max
 		cam.use_follow_limits = true
@@ -226,15 +235,17 @@ func _apply_limit_handle(cam: Node, handle_id: int, world: Vector3) -> void:
 	cam.follow_limit_max = mx
 
 
-func _apply_deadzone_handle(cam: Node, handle_id: int, world: Vector3) -> void:
+func _apply_deadzone_handle(cam, handle_id: int, world: Vector3) -> void:
+	if cam == null:
+		return
 	var layout: Dictionary = cam.get_follow_gizmo_layout()
-	var look: Vector3 = layout.look
+	var look: Vector3 = layout["look"]
 	var along_x := handle_id == HANDLE_DEAD_NEG_X or handle_id == HANDLE_DEAD_POS_X
 	var distance := absf(world.x - look.x) if along_x else absf(world.z - look.z)
 	if distance <= _DEADZONE_SNAP:
 		distance = 0.0
 	if cam.follow_deadzone_mode == cam.FollowDeadzoneMode.VIEW:
-		var half: Vector2 = layout.view_half
+		var half: Vector2 = layout["view_half"]
 		var denom := maxf(half.x, 0.001)
 		cam.follow_deadzone_view_x = clampf(distance / denom, 0.0, 0.95)
 		return
@@ -246,7 +257,9 @@ func _apply_deadzone_handle(cam: Node, handle_id: int, world: Vector3) -> void:
 	cam.follow_deadzone = dz
 
 
-func _snapshot(cam: Node) -> Dictionary:
+func _snapshot(cam) -> Dictionary:
+	if cam == null:
+		return {}
 	return {
 		"use_follow_limits": cam.use_follow_limits,
 		"follow_limit_min": cam.follow_limit_min,
@@ -257,28 +270,32 @@ func _snapshot(cam: Node) -> Dictionary:
 	}
 
 
-func _apply_snapshot(cam: Node, snap: Dictionary) -> void:
-	cam.use_follow_limits = snap.use_follow_limits
-	cam.follow_limit_min = snap.follow_limit_min
-	cam.follow_limit_max = snap.follow_limit_max
-	cam.follow_deadzone = snap.follow_deadzone
-	cam.follow_deadzone_view_x = snap.follow_deadzone_view_x
-	cam.follow_deadzone_view_y = snap.follow_deadzone_view_y
+func _apply_snapshot(cam, snap: Dictionary) -> void:
+	if cam == null or snap.is_empty():
+		return
+	cam.use_follow_limits = snap["use_follow_limits"]
+	cam.follow_limit_min = snap["follow_limit_min"]
+	cam.follow_limit_max = snap["follow_limit_max"]
+	cam.follow_deadzone = snap["follow_deadzone"]
+	cam.follow_deadzone_view_x = snap["follow_deadzone_view_x"]
+	cam.follow_deadzone_view_y = snap["follow_deadzone_view_y"]
 
 
-func _add_snapshot_undo(ur: EditorUndoRedoManager, cam: Node, snap: Dictionary) -> void:
+func _add_snapshot_undo(ur: EditorUndoRedoManager, cam, snap: Dictionary) -> void:
+	if cam == null or snap.is_empty():
+		return
 	ur.add_do_property(cam, "use_follow_limits", cam.use_follow_limits)
-	ur.add_undo_property(cam, "use_follow_limits", snap.use_follow_limits)
+	ur.add_undo_property(cam, "use_follow_limits", snap["use_follow_limits"])
 	ur.add_do_property(cam, "follow_limit_min", cam.follow_limit_min)
-	ur.add_undo_property(cam, "follow_limit_min", snap.follow_limit_min)
+	ur.add_undo_property(cam, "follow_limit_min", snap["follow_limit_min"])
 	ur.add_do_property(cam, "follow_limit_max", cam.follow_limit_max)
-	ur.add_undo_property(cam, "follow_limit_max", snap.follow_limit_max)
+	ur.add_undo_property(cam, "follow_limit_max", snap["follow_limit_max"])
 	ur.add_do_property(cam, "follow_deadzone", cam.follow_deadzone)
-	ur.add_undo_property(cam, "follow_deadzone", snap.follow_deadzone)
+	ur.add_undo_property(cam, "follow_deadzone", snap["follow_deadzone"])
 	ur.add_do_property(cam, "follow_deadzone_view_x", cam.follow_deadzone_view_x)
-	ur.add_undo_property(cam, "follow_deadzone_view_x", snap.follow_deadzone_view_x)
+	ur.add_undo_property(cam, "follow_deadzone_view_x", snap["follow_deadzone_view_x"])
 	ur.add_do_property(cam, "follow_deadzone_view_y", cam.follow_deadzone_view_y)
-	ur.add_undo_property(cam, "follow_deadzone_view_y", snap.follow_deadzone_view_y)
+	ur.add_undo_property(cam, "follow_deadzone_view_y", snap["follow_deadzone_view_y"])
 
 
 func _intersect_floor(camera: Camera3D, screen_pos: Vector2, floor_y: float) -> Variant:
