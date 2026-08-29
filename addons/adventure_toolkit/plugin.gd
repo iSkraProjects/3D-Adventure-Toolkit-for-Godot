@@ -45,6 +45,9 @@ const MENU_CREATE_TEMPLATE_PICKUP := "ATK/Create Template/Pickup"
 const MENU_CREATE_TEMPLATE_INSPECTABLE := "ATK/Create Template/Inspectable"
 const MENU_CREATE_TEMPLATE_NPC_BASIC := "ATK/Create Template/NPC Basic"
 const MENU_CREATE_TEMPLATE_PUZZLE_SIMPLE := "ATK/Create Template/Puzzle Simple"
+const MENU_CREATE_TEMPLATE_SCENE_CAMERA := "ATK/Create Template/Scene Camera"
+const MENU_CREATE_TEMPLATE_CAMERA_DIRECTOR := "ATK/Create Template/Camera Director"
+const MENU_CREATE_TEMPLATE_CAMERA_ZONE := "ATK/Create Template/Camera Zone"
 const TEMPLATE_EXIT_PATH := "res://addons/adventure_toolkit/templates/objects/Template_Exit.tscn"
 const TEMPLATE_NPC_TRADE_PATH := "res://addons/adventure_toolkit/templates/objects/Template_NPC_Trade.tscn"
 const TEMPLATE_TRIGGER_PATH := "res://addons/adventure_toolkit/templates/objects/Template_Trigger.tscn"
@@ -54,6 +57,9 @@ const TEMPLATE_PICKUP_PATH := "res://addons/adventure_toolkit/templates/objects/
 const TEMPLATE_INSPECTABLE_PATH := "res://addons/adventure_toolkit/templates/objects/Template_Inspectable.tscn"
 const TEMPLATE_NPC_BASIC_PATH := "res://addons/adventure_toolkit/templates/objects/Template_NPC_Basic.tscn"
 const TEMPLATE_PUZZLE_SIMPLE_PATH := "res://addons/adventure_toolkit/templates/objects/Template_Puzzle_Simple.tscn"
+const TEMPLATE_SCENE_CAMERA_PATH := "res://addons/adventure_toolkit/templates/objects/Template_Scene_Camera.tscn"
+const TEMPLATE_CAMERA_DIRECTOR_PATH := "res://addons/adventure_toolkit/templates/objects/Template_Camera_Director.tscn"
+const TEMPLATE_CAMERA_ZONE_PATH := "res://addons/adventure_toolkit/templates/objects/Template_Camera_Zone.tscn"
 
 
 func _enter_tree() -> void:
@@ -85,6 +91,9 @@ func _enter_tree() -> void:
 	add_tool_menu_item(MENU_CREATE_TEMPLATE_INSPECTABLE, _create_template_inspectable)
 	add_tool_menu_item(MENU_CREATE_TEMPLATE_NPC_BASIC, _create_template_npc_basic)
 	add_tool_menu_item(MENU_CREATE_TEMPLATE_PUZZLE_SIMPLE, _create_template_puzzle_simple)
+	add_tool_menu_item(MENU_CREATE_TEMPLATE_SCENE_CAMERA, _create_template_scene_camera)
+	add_tool_menu_item(MENU_CREATE_TEMPLATE_CAMERA_DIRECTOR, _create_template_camera_director)
+	add_tool_menu_item(MENU_CREATE_TEMPLATE_CAMERA_ZONE, _create_template_camera_zone)
 
 
 func _exit_tree() -> void:
@@ -116,6 +125,9 @@ func _exit_tree() -> void:
 	remove_tool_menu_item(MENU_CREATE_TEMPLATE_INSPECTABLE)
 	remove_tool_menu_item(MENU_CREATE_TEMPLATE_NPC_BASIC)
 	remove_tool_menu_item(MENU_CREATE_TEMPLATE_PUZZLE_SIMPLE)
+	remove_tool_menu_item(MENU_CREATE_TEMPLATE_SCENE_CAMERA)
+	remove_tool_menu_item(MENU_CREATE_TEMPLATE_CAMERA_DIRECTOR)
+	remove_tool_menu_item(MENU_CREATE_TEMPLATE_CAMERA_ZONE)
 
 
 func _ensure_autoload(autoload_name: String, autoload_path: String) -> void:
@@ -358,6 +370,18 @@ func _create_template_npc_basic() -> void:
 
 func _create_template_puzzle_simple() -> void:
 	_instantiate_template_into_scene(TEMPLATE_PUZZLE_SIMPLE_PATH)
+
+
+func _create_template_scene_camera() -> void:
+	_instantiate_template_into_scene(TEMPLATE_SCENE_CAMERA_PATH)
+
+
+func _create_template_camera_director() -> void:
+	_instantiate_template_into_scene(TEMPLATE_CAMERA_DIRECTOR_PATH)
+
+
+func _create_template_camera_zone() -> void:
+	_instantiate_template_into_scene(TEMPLATE_CAMERA_ZONE_PATH)
 
 
 func _instantiate_template_into_scene(template_path: String) -> void:

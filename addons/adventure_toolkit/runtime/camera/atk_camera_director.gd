@@ -135,6 +135,8 @@ func _apply_camera_current(next: Camera3D) -> void:
 	_current_camera = next
 	if next != null and is_instance_valid(next):
 		next.current = true
+		if next.has_method("notify_camera_activated"):
+			next.notify_camera_activated()
 		emit_signal("active_camera_changed", next)
 	else:
 		emit_signal("active_camera_changed", null)

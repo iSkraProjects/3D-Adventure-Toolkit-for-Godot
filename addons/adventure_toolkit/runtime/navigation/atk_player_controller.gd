@@ -22,6 +22,21 @@ signal interaction_finished(target: Node)
 @export var interaction_relaxed_marker_distance := 2.85
 @export var floor_y := 0.0
 
+@export_group("Motion Easing")
+## Ease into walk speed and ease out before stopping. Disable for the old instant-speed motion.
+@export var motion_easing_enabled := true
+## How quickly speed ramps up toward [member move_speed] (units per second squared).
+@export_range(0.1, 80.0, 0.1, "or_greater") var acceleration := 8.0
+## How quickly speed ramps down when slowing or stopping (units per second squared).
+@export_range(0.1, 80.0, 0.1, "or_greater") var deceleration := 12.0
+## If on, speed is capped so the player can come to rest at the click point instead of overshooting.
+@export var arrival_slowdown := true
+## How quickly facing/direction turns toward the path (higher = snappier turns).
+@export_range(0.1, 80.0, 0.1, "or_greater") var turn_acceleration := 10.0
+## Optional 0–1 curve sampled along the current trip (0 = start, 1 = arrival). Multiplies [member move_speed].
+## Leave empty to use acceleration / deceleration only.
+@export var speed_curve: Curve
+
 @onready var navigation_agent: NavigationAgent3D = $NavigationAgent3D
 
 var _has_active_destination := false
@@ -30,11 +45,15 @@ var _pending_interaction_target: ATKAdventureObject = null
 var _pending_interaction_verb := "interact"
 var _active_interaction_verb := "interact"
 var _active_arrival_threshold := 0.15
+var _current_speed := 0.0
+var _move_direction := Vector3.ZERO
+var _trip_length := 0.0
 
 
 func _ready() -> void:
 	add_to_group("atk_player")
 	add_to_group("atk_player_start")
+	motion_mode = MOTION_MODE_FLOATING
 	_active_arrival_threshold = arrival_threshold
 	navigation_agent.path_desired_distance = _active_arrival_threshold
 	navigation_agent.target_desired_distance = _active_arrival_threshold
@@ -69,7 +88,14 @@ func _is_world_interaction_locked() -> bool:
 func _clear_active_movement() -> void:
 	_has_active_destination = false
 	_pending_interaction_target = null
+	_reset_motion_state()
+
+
+func _reset_motion_state() -> void:
 	velocity = Vector3.ZERO
+	_current_speed = 0.0
+	_move_direction = Vector3.ZERO
+	_trip_length = 0.0
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -99,7 +125,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	request_destination(target_position)
 
 
-func _physics_process(_delta: float) -> void:
+func _physics_process(delta: float) -> void:
 	# Scene transitions can invoke one more physics tick while this node (or its physics body)
 	# is being detached. Guard hard to avoid null-space and not-inside-tree engine errors.
 	if not is_inside_tree() or get_world_3d() == null:
@@ -109,25 +135,29 @@ func _physics_process(_delta: float) -> void:
 
 	if _is_world_interaction_locked():
 		_clear_active_movement()
-		_safe_move_and_slide()
+		_apply_planar_motion()
 		return
 	if not _has_active_destination:
-		velocity = Vector3.ZERO
-		_safe_move_and_slide()
+		_apply_idle_motion(delta)
 		return
+
+	# Must query the agent every physics frame or a new click never gets a path.
+	var next_path_position := navigation_agent.get_next_path_position()
 
 	if _is_destination_reached():
 		_finish_destination()
+		_apply_planar_motion()
 		return
 
-	var next_path_position := navigation_agent.get_next_path_position()
-	var move_direction := global_position.direction_to(next_path_position)
-	velocity = move_direction * move_speed
+	var desired_direction := _horizontal_direction_to(next_path_position)
+	_move_direction = _blend_move_direction(desired_direction, delta)
+	_current_speed = _step_current_speed(delta)
+	velocity = _move_direction * _current_speed
 
-	if velocity.length_squared() > 0.001:
-		look_at(global_position + Vector3(velocity.x, 0.0, velocity.z), Vector3.UP)
+	if _current_speed > 0.08 and _move_direction.length_squared() > 0.0001:
+		look_at(global_position + _move_direction, Vector3.UP)
 
-	_safe_move_and_slide()
+	_apply_planar_motion()
 
 
 func request_destination(target_position: Vector3) -> void:
@@ -146,7 +176,7 @@ func request_interaction(target: ATKAdventureObject, verb: String = "interact") 
 
 func _finish_destination() -> void:
 	_has_active_destination = false
-	velocity = Vector3.ZERO
+	_reset_motion_state()
 	emit_signal("destination_reached", _current_destination)
 
 	if _pending_interaction_target != null:
@@ -173,10 +203,11 @@ func _perform_pending_interaction() -> void:
 
 
 func _is_destination_reached() -> bool:
-	if navigation_agent.is_navigation_finished():
+	if _horizontal_distance_to(_current_destination) <= _active_arrival_threshold:
 		return true
 
-	if global_position.distance_to(_current_destination) <= _active_arrival_threshold:
+	var path := navigation_agent.get_current_navigation_path()
+	if path.size() > 1 and navigation_agent.is_navigation_finished():
 		return true
 
 	if (
@@ -200,6 +231,7 @@ func _set_destination(target_position: Vector3, desired_threshold: float) -> voi
 	_active_arrival_threshold = desired_threshold
 	_current_destination = Vector3(target_position.x, floor_y, target_position.z)
 	_has_active_destination = true
+	_trip_length = maxf(_horizontal_distance_to(_current_destination), 0.001)
 	navigation_agent.path_desired_distance = _active_arrival_threshold
 	navigation_agent.target_desired_distance = _active_arrival_threshold
 	navigation_agent.target_position = _current_destination
@@ -241,6 +273,68 @@ func _get_clicked_adventure_object(mouse_position: Vector2) -> ATKAdventureObjec
 
 func get_requested_interaction_verb() -> String:
 	return _active_interaction_verb
+
+
+func _horizontal_direction_to(world_point: Vector3) -> Vector3:
+	var offset := Vector3(world_point.x - global_position.x, 0.0, world_point.z - global_position.z)
+	if offset.length_squared() < 0.000001:
+		return Vector3.ZERO
+	return offset.normalized()
+
+
+func _horizontal_distance_to(world_point: Vector3) -> float:
+	var here := Vector3(global_position.x, 0.0, global_position.z)
+	var there := Vector3(world_point.x, 0.0, world_point.z)
+	return here.distance_to(there)
+
+
+func _blend_move_direction(desired_direction: Vector3, delta: float) -> Vector3:
+	if desired_direction.length_squared() < 0.000001:
+		return _move_direction
+	if _move_direction.length_squared() < 0.000001 or not motion_easing_enabled:
+		return desired_direction
+	var step := maxf(turn_acceleration, 0.01) * delta
+	var blended := _move_direction.move_toward(desired_direction, step)
+	if blended.length_squared() < 0.000001:
+		return desired_direction
+	return blended.normalized()
+
+
+func _step_current_speed(delta: float) -> float:
+	var remaining := _horizontal_distance_to(_current_destination)
+	var desired_speed := _desired_walk_speed(remaining)
+	if not motion_easing_enabled:
+		return desired_speed
+	var rate := acceleration if desired_speed > _current_speed else deceleration
+	return move_toward(_current_speed, desired_speed, maxf(rate, 0.01) * delta)
+
+
+func _desired_walk_speed(remaining: float) -> float:
+	var desired := maxf(move_speed, 0.0)
+	if speed_curve != null and speed_curve.point_count > 0 and _trip_length > 0.001:
+		var traveled := clampf(1.0 - (remaining / _trip_length), 0.0, 1.0)
+		desired *= clampf(speed_curve.sample(traveled), 0.0, 1.0)
+	if not motion_easing_enabled:
+		return desired
+	if not arrival_slowdown:
+		return desired
+	var stop_distance := maxf(remaining - _active_arrival_threshold, 0.0)
+	var max_stoppable := sqrt(2.0 * maxf(deceleration, 0.01) * stop_distance)
+	return minf(desired, max_stoppable)
+
+
+func _apply_idle_motion(delta: float) -> void:
+	if motion_easing_enabled and _current_speed > 0.01:
+		_current_speed = move_toward(_current_speed, 0.0, maxf(deceleration, 0.01) * delta)
+		velocity = _move_direction * _current_speed
+	else:
+		_reset_motion_state()
+	_apply_planar_motion()
+
+
+func _apply_planar_motion() -> void:
+	velocity.y = 0.0
+	_safe_move_and_slide()
 
 
 func _safe_move_and_slide() -> void:

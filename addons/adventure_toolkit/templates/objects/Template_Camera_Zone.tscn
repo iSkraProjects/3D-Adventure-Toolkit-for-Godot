@@ -1,0 +1,16 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://addons/adventure_toolkit/runtime/camera/atk_camera_zone.gd" id="1"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_zone"]
+size = Vector3(4, 3, 4)
+
+[node name="Template_Camera_Zone" type="Area3D"]
+script = ExtResource("1")
+zone_priority = 10
+monitor_player = true
+snap_on_enter = true
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+shape = SubResource("BoxShape3D_zone")

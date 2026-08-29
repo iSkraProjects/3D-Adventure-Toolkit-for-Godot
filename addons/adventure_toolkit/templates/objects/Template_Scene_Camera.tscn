@@ -1,0 +1,13 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://addons/adventure_toolkit/runtime/camera/atk_scene_camera.gd" id="1"]
+
+[node name="Template_Scene_Camera" type="Camera3D"]
+current = true
+script = ExtResource("1")
+behavior = 0
+follow_x = true
+follow_y = false
+follow_z = false
+follow_smoothing = 6.0
+look_smoothing = 6.0
